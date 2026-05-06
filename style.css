@@ -1,0 +1,230 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f2f5; 
+}
+
+.loginwrapper {
+    display: flex;
+    width: 100%;
+    max-width: 1100px; 
+    height: 580px; 
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); 
+    background: #ffffff; 
+}
+
+.leftpanel {
+    flex: 1.2; 
+    background-image: url('giaodien1.jpg'); 
+    background-size: cover;
+    background-position: center;
+}
+
+.rightpanel {
+    flex: 1; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    background: #ffffff; 
+}
+
+.logincontainer {
+    width: 100%;
+    max-width: 420px; 
+    text-align: center;
+    color: #333333; 
+}
+
+.logincontainer h2 {
+    margin-bottom: 30px;
+    font-size: 32px; 
+    font-weight: 700;
+    color: #111111; 
+}
+
+.inputgroup {
+    margin-bottom: 20px; 
+    text-align: left;
+}
+
+.inputgroup label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 15px; 
+    font-weight: 600; 
+    color: #555555; 
+}
+
+.inputgroup input {
+    width: 100%;
+    padding: 14px 15px; 
+    border: 1px solid #cccccc; 
+    border-radius: 8px;
+    background: #fafafa;
+    color: #333;
+    font-size: 15px;
+    outline: none;
+    transition: 0.3s;
+}
+
+.inputgroup input:focus {
+    border-color: #0984e3; 
+    box-shadow: 0 0 5px rgba(9, 132, 227, 0.3);
+    background: #ffffff;
+}
+
+.passwordwrapper {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+#showbtn {
+    padding: 0 18px; 
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    background: #f1f1f1;
+    color: #333;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+#showbtn:hover {
+    background: #e2e2e2;
+}
+
+.passwordactions {
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.actionbtn {
+    background: transparent;
+    border: 1px solid #0984e3;
+    color: #0984e3;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.3s;
+}
+
+.actionbtn:hover {
+    background: #0984e3;
+    color: #ffffff;
+}
+
+#strengthmetertext {
+    font-size: 14px; 
+    font-weight: bold;
+    text-align: left;
+    margin-top: 5px;
+}
+
+.weak { color: #d63031; } 
+.moderate { color: #e1b12c; } 
+.strong { color: #00b894; }
+
+.options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 14px;
+    color: #555555;
+}
+
+.options a {
+    color: #0984e3;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.options a:hover {
+    text-decoration: underline;
+}
+
+.loginbtn {
+    width: 100%;
+    padding: 15px; 
+    border: none;
+    border-radius: 8px;
+    background: #0984e3;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.loginbtn:hover {
+    background: #74b9ff;
+}
+
+/* --- Phần thiết kế cho nút Admin --- */
+.adminlink {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.adminlink a {
+    color: #a0522d; /* Mã màu nâu (Sienna) */
+    font-size: 13px; /* Chữ nhỏ hơn */
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.adminlink a:hover {
+    color: #8b4513; /* Chuyển màu nâu đậm hơn khi rê chuột vào */
+    text-decoration: underline; /* Hiện gạch chân khi rê chuột */
+}
+
+/* --- Phần thiết kế cho đăng nhập xã hội --- */
+.social-login {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.social-login p {
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #666;
+}
+
+/* --- Nút đăng nhập Facebook và Google --- */
+.social-login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.social-login .fb-login-button {
+    width: 100%;
+    max-width: 300px;
+}
+
+.social-login .fb-login-button iframe {
+    width: 100% !important;
+    max-width: 300px !important;
+}
+
+.social-login .g_id_signin {
+    width: 100%;
+    max-width: 300px !important;
+}
