@@ -16,12 +16,14 @@ body {
 .loginwrapper {
     display: flex;
     width: 100%;
-    max-width: 1100px; 
-    height: 580px; 
+    max-width: 1100px;
+    /* BỎ height: 580px — để tự co giãn theo nội dung */
+    min-height: 580px;
     border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); 
-    background: #ffffff; 
+    /* Đổi overflow: hidden → overflow: visible để không cắt nội dung */
+    overflow: visible;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
 }
 
 .leftpanel {
@@ -29,15 +31,21 @@ body {
     background-image: url('giaodien1.jpg'); 
     background-size: cover;
     background-position: center;
+    /* Bo góc trái vì overflow wrapper đã đổi sang visible */
+    border-radius: 20px 0 0 20px;
 }
 
 .rightpanel {
     flex: 1; 
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;      /* Căn từ trên xuống, không bị đẩy giữa gây mất tiêu đề */
     padding: 40px;
-    background: #ffffff; 
+    background: #ffffff;
+    /* Bo góc phải */
+    border-radius: 0 20px 20px 0;
+    /* Cho phép scroll riêng cột phải nếu màn hình nhỏ */
+    overflow-y: auto;
 }
 
 .logincontainer {
@@ -212,16 +220,6 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 12px;
-}
-
-.social-login .fb-login-button {
-    width: 100%;
-    max-width: 300px;
-}
-
-.social-login .fb-login-button iframe {
-    width: 100% !important;
-    max-width: 300px !important;
 }
 
 .social-login .g_id_signin {

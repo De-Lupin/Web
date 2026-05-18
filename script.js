@@ -13,17 +13,15 @@ let passwordInput = document.querySelector("#password");
 let showbtn = document.querySelector("#showbtn");
 let suggestbtn = document.querySelector("#suggestbtn");
 
-// Kiểm tra độ mạnh khi người dùng tự gõ phím
 passwordInput.addEventListener("keyup", function () {
     let password = passwordInput.value;
     
-    // Xóa định dạng màu cũ
     strengthmetertext.className = "";
 
     if (password.length === 0) {
         strengthmetertext.innerText = "";
         return;
-    }
+    }           
 
     let strength = Strength(password);
     if (strength <= 2) {
@@ -38,7 +36,6 @@ passwordInput.addEventListener("keyup", function () {
     }
 });
 
-// Chức năng nút Ẩn/Hiện
 showbtn.onclick = function () {
     if (passwordInput.type === "password") {
         passwordInput.setAttribute("type", "text");
@@ -49,7 +46,6 @@ showbtn.onclick = function () {
     }
 };
 
-// Chức năng Đề xuất mật khẩu
 suggestbtn.onclick = function () {
     let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
     let strongPassword = "";
@@ -60,22 +56,18 @@ suggestbtn.onclick = function () {
         strongPassword += chars.substring(randomNumber, randomNumber + 1);
     }
 
-    // Gán mật khẩu vào ô
     passwordInput.value = strongPassword;
     
-    // Đổi sang dạng text để dễ nhìn thấy
     passwordInput.setAttribute("type", "text");
     showbtn.innerText = "Hide";
     
-    // Cập nhật chữ hiển thị
     strengthmetertext.className = "strong";
     strengthmetertext.innerText = "Mật khẩu mạnh";
 };
 
-// Facebook Login
 window.fbAsyncInit = function() {
     FB.init({
-        appId      : 'YOUR_APP_ID', // Thay bằng App ID thực tế
+        appId      : 'YOUR_APP_ID', 
         cookie     : true,
         xfbml      : true,
         version    : 'v18.0'
@@ -85,42 +77,18 @@ window.fbAsyncInit = function() {
       
 };
 
-(function(d, s, id){
-    var js, fjs = d.getElementsByTagName(s)[0];
-    if (d.getElementById(id)) {return;}
-    js = d.createElement(s); js.id = id;
-    js.src = "https://connect.facebook.net/en_US/sdk.js";
-    fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));
 
-function checkLoginState() {
-    FB.getLoginStatus(function(response) {
-        statusChangeCallback(response);
-    });
-}
-
-function statusChangeCallback(response) {
-    if (response.status === 'connected') {
-        // Người dùng đã đăng nhập Facebook và ứng dụng
-        testAPI();
-    } else {
-        // Người dùng chưa đăng nhập hoặc chưa ủy quyền ứng dụng
-        console.log('Please log into this app.');
-    }
-}
 
 function testAPI() {
     FB.api('/me', function(response) {
         console.log('Successful login for: ' + response.name);
-        // Chuyển hướng hoặc xử lý đăng nhập
+       
         window.location.href = '?fb_login=1';
     });
 }
 
-// Google Sign-In
+
 function handleCredentialResponse(response) {
     console.log("Encoded JWT ID token: " + response.credential);
-    // Gửi token đến server để xác minh
-    // Ở đây giả lập chuyển hướng
     window.location.href = '?google_login=1';
 }
