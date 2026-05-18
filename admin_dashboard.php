@@ -1,292 +1,142 @@
 <?php
-// ============================================================
-// ADMIN_DASHBOARD.PHP - Bảng điều khiển dành cho Admin
-// Giữ nguyên giao diện cũ — thêm: kiểm tra role + thống kê thật từ DB
-// ============================================================
-session_start();
-require 'config.php';
+session_start(); require 'config.php'; require_role(['admin']);
 
-// Bảo vệ trang: chỉ admin được vào
-require_role(['admin']);
+$admin_fullname = $_SESSION['full_name'] ?? 'Admin';
+$login_time     = isset($_SESSION['login_time']) ? date('d/m/Y H:i:s',$_SESSION['login_time']) : 'N/A';
 
-$admin_username = $_SESSION['username']  ?? 'Admin';
-$admin_fullname = $_SESSION['full_name'] ?? 'Quản trị viên';
-$admin_email    = $_SESSION['email']     ?? 'N/A';
-$login_time     = isset($_SESSION['login_time'])
-                    ? date('d/m/Y H:i:s', $_SESSION['login_time'])
-                    : 'N/A';
+// Thống kê người dùng
+$total_users   = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role!='admin' AND is_active=1")->fetch_assoc()['c']??0;
+$total_dp      = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='dieuphoI' AND is_active=1")->fetch_assoc()['c']??0;
+$total_kh      = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khachhang' AND is_active=1")->fetch_assoc()['c']??0;
+$logins_today  = $conn->query("SELECT COUNT(*) AS c FROM audit_log WHERE action='LOGIN' AND DATE(created_at)=CURDATE()")->fetch_assoc()['c']??0;
 
-// ── Lấy thống kê từ DB ───────────────────────────────────
-// Tổng người dùng (trừ admin)
-$r = $conn->query("SELECT COUNT(*) AS total FROM users WHERE role != 'admin' AND is_active = 1");
-$total_users = $r->fetch_assoc()['total'] ?? 0;
+// Thống kê vận hành (nếu bảng tồn tại)
+$don_thang = $xe_total = $doanh_thu = 0;
+if ($conn->query("SHOW TABLES LIKE 'don_hang'")->num_rows > 0) {
+    $don_thang  = $conn->query("SELECT COUNT(*) AS c FROM don_hang WHERE MONTH(ngay_tao)=MONTH(CURDATE()) AND YEAR(ngay_tao)=YEAR(CURDATE()) AND trang_thai!='huy'")->fetch_assoc()['c']??0;
+    $doanh_thu  = $conn->query("SELECT COALESCE(SUM(doanh_thu),0) AS t FROM don_hang WHERE MONTH(ngay_tao)=MONTH(CURDATE()) AND trang_thai NOT IN ('huy','cho_duyet')")->fetch_assoc()['t']??0;
+}
+if ($conn->query("SHOW TABLES LIKE 'xe'")->num_rows > 0) {
+    $xe_total = $conn->query("SELECT COUNT(*) AS c FROM xe")->fetch_assoc()['c']??0;
+    $xe_chay  = $conn->query("SELECT COUNT(*) AS c FROM xe WHERE tinh_trang='dang_chay'")->fetch_assoc()['c']??0;
+}
 
-// Điều phối viên
-$r = $conn->query("SELECT COUNT(*) AS total FROM users WHERE role = 'dieuphoI' AND is_active = 1");
-$total_dieuphoI = $r->fetch_assoc()['total'] ?? 0;
+// Log gần nhất
+$logs = $conn->query("SELECT username,action,detail,ip_address,created_at FROM audit_log ORDER BY created_at DESC LIMIT 8")->fetch_all(MYSQLI_ASSOC);
 
-// Khách hàng
-$r = $conn->query("SELECT COUNT(*) AS total FROM users WHERE role = 'khachhang' AND is_active = 1");
-$total_kh = $r->fetch_assoc()['total'] ?? 0;
-
-// Đăng nhập hôm nay (từ audit_log)
-$r = $conn->query("SELECT COUNT(*) AS total FROM audit_log WHERE action = 'LOGIN' AND DATE(created_at) = CURDATE()");
-$logins_today = $r->fetch_assoc()['total'] ?? 0;
-
-// 10 nhật ký gần nhất
-$logs = [];
-$r = $conn->query(
-    "SELECT username, action, detail, ip_address, created_at
-     FROM audit_log ORDER BY created_at DESC LIMIT 10"
-);
-while ($row = $r->fetch_assoc()) $logs[] = $row;
+$active = 'dashboard'; require 'sidebar_admin.php';
 ?>
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dashboard Admin</title>
+<link rel="stylesheet" href="admin_layout.css">
+<style>
+.welcome{background:var(--sidebar-bg);border-radius:14px;padding:22px 28px;color:#fff;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between}
+.welcome h2{font-size:20px;font-weight:700}
+.welcome p{font-size:13px;color:rgba(255,255,255,.75);margin-top:5px}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.panel-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.panel-card h3{font-size:14px;font-weight:700;color:var(--primary);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #f0f2ff;display:flex;align-items:center;justify-content:space-between}
+.panel-card h3 a{font-size:12px;text-decoration:none;color:var(--primary);font-weight:500}
+.log-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f4f6f8;font-size:12px}
+.log-row:last-child{border-bottom:none}
+.quick-link{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#f8f9fa;border-radius:12px;padding:20px;text-decoration:none;color:var(--text);transition:.2s;border:1.5px solid var(--border)}
+.quick-link:hover{background:#f0f2ff;border-color:var(--primary);color:var(--primary)}
+.quick-link .ql-icon{font-size:28px}
+.quick-link span{font-size:13px;font-weight:600}
+@media(max-width:900px){.panels{grid-template-columns:1fr}}
+</style>
+</head><body>
+<div class="app">
+<?php require 'sidebar_admin.php'; ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bảng điều khiển Admin</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        /* ── Giữ nguyên toàn bộ style cũ ── */
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:#f5f7fa; }
-        .admin-wrapper { display:flex; min-height:100vh; }
+<main class="main">
+<div class="topbar">
+    <div>
+        <div class="topbar-title">📊 Bảng Điều Khiển Admin</div>
+        <div class="breadcrumb">Đăng nhập lúc <?= $login_time ?></div>
+    </div>
+    <div class="user-chip">
+        <div class="chip-avatar"><?= mb_strtoupper(mb_substr($admin_fullname,0,1)) ?></div>
+        <div><div class="chip-name"><?= htmlspecialchars($admin_fullname) ?></div>
+        <div class="chip-role">Super Admin</div></div>
+    </div>
+</div>
 
-        /* SIDEBAR */
-        .sidebar {
-            width:260px;
-            background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-            color:white; padding:30px 20px;
-            box-shadow:2px 0 10px rgba(0,0,0,0.1);
-        }
-        .sidebar-header { text-align:center; margin-bottom:40px; padding-bottom:20px; border-bottom:2px solid rgba(255,255,255,0.2); }
-        .sidebar-header .logo { font-size:32px; margin-bottom:10px; }
-        .sidebar-header h2  { font-size:18px; font-weight:600; }
-        .sidebar-menu { list-style:none; }
-        .sidebar-menu li   { margin-bottom:15px; }
-        .sidebar-menu a {
-            color:rgba(255,255,255,0.8); text-decoration:none;
-            display:block; padding:12px 15px; border-radius:8px;
-            transition:0.3s; font-size:14px;
-        }
-        .sidebar-menu a:hover, .sidebar-menu a.active {
-            background:rgba(255,255,255,0.2); color:white;
-        }
-        .sidebar-menu a.active { font-weight:600; }
-
-        /* MAIN */
-        .main-content { flex:1; display:flex; flex-direction:column; }
-        .top-navbar {
-            background:white; padding:20px 40px;
-            box-shadow:0 2px 10px rgba(0,0,0,0.08);
-            display:flex; justify-content:space-between; align-items:center;
-        }
-        .navbar-title h1  { color:#333; font-size:24px; }
-        .navbar-user      { display:flex; align-items:center; gap:20px; }
-        .user-info p      { color:#666; font-size:13px; margin:2px 0; }
-        .user-info strong { color:#333; font-size:14px; }
-        .logout-btn {
-            padding:8px 20px; background:#e74c3c; color:white;
-            border:none; border-radius:6px; cursor:pointer;
-            font-size:14px; transition:0.3s; text-decoration:none;
-        }
-        .logout-btn:hover { background:#c0392b; }
-
-        /* DASHBOARD CONTENT */
-        .dashboard-content { flex:1; padding:40px; }
-        .dashboard-cards {
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-            gap:20px; margin-bottom:30px;
-        }
-        .card {
-            background:white; padding:25px; border-radius:10px;
-            box-shadow:0 2px 15px rgba(0,0,0,0.08); transition:0.3s;
-        }
-        .card:hover { transform:translateY(-5px); box-shadow:0 8px 25px rgba(0,0,0,0.12); }
-        .card-icon  { font-size:40px; margin-bottom:15px; }
-        .card h3    { color:#333; margin-bottom:10px; font-size:16px; }
-        .card p     { color:#666; font-size:13px; margin-bottom:15px; }
-        .card-value { font-size:28px; font-weight:700; color:#667eea; }
-
-        /* Content sections */
-        .content-section {
-            background:white; padding:30px; border-radius:10px;
-            box-shadow:0 2px 15px rgba(0,0,0,0.08); margin-bottom:24px;
-        }
-        .content-section h2 {
-            color:#333; margin-bottom:20px; font-size:20px;
-            border-bottom:2px solid #f0f0f0; padding-bottom:15px;
-        }
-
-        /* Info table (giữ nguyên) */
-        .info-table { width:100%; border-collapse:collapse; }
-        .info-table tr      { border-bottom:1px solid #f0f0f0; }
-        .info-table td      { padding:12px 0; color:#666; font-size:14px; }
-        .info-table td:first-child { font-weight:600; color:#333; width:200px; }
-
-        /* Log table */
-        .log-table { width:100%; border-collapse:collapse; font-size:13px; }
-        .log-table th {
-            background:#f8f9fa; text-align:left;
-            padding:10px 12px; color:#555; font-weight:600;
-            border-bottom:2px solid #e9ecef;
-        }
-        .log-table td { padding:10px 12px; border-bottom:1px solid #f0f0f0; color:#666; }
-        .log-table tr:hover td { background:#fafafa; }
-        .badge-action {
-            display:inline-block; padding:2px 8px; border-radius:4px;
-            font-size:11px; font-weight:700;
-        }
-        .badge-LOGIN        { background:#d4edda; color:#155724; }
-        .badge-LOGOUT       { background:#e2e3e5; color:#383d41; }
-        .badge-LOGIN_FAILED { background:#f8d7da; color:#721c24; }
-        .badge-ADMIN_LOGIN  { background:#cce5ff; color:#004085; }
-
-        @media(max-width:768px){
-            .admin-wrapper  { flex-direction:column; }
-            .sidebar        { width:100%; }
-            .dashboard-content { padding:20px; }
-            .top-navbar     { flex-direction:column; gap:15px; }
-        }
-    </style>
-</head>
-<body>
-<div class="admin-wrapper">
-
-    <!-- SIDEBAR (giữ nguyên cũ) -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo">👨‍💼</div>
-            <h2>Admin Panel</h2>
+<div class="content">
+    <div class="welcome">
+        <div>
+            <h2>Xin chào, <?= htmlspecialchars($admin_fullname) ?>! 👋</h2>
+            <p>Chào mừng trở lại hệ thống quản trị Vận Tải Đường Bộ.</p>
         </div>
-        <ul class="sidebar-menu">
-            <li><a href="admin_dashboard.php" class="active">📊 Dashboard</a></li>
-            <li><a href="indext.php">👥 Quản lý Người dùng</a></li>
-            <li><a href="#">📦 Đơn hàng</a></li>
-            <li><a href="#">🚛 Phương tiện</a></li>
-            <li><a href="#">📈 Báo cáo</a></li>
-            <li><a href="#">📝 Nhật ký</a></li>
-            <li><a href="#">⚙️ Cài đặt</a></li>
-        </ul>
+        <div style="font-size:52px;opacity:.8">👨‍💼</div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
-        <div class="top-navbar">
-            <div class="navbar-title">
-                <h1>Bảng Điều Khiển Quản Trị</h1>
-            </div>
-            <div class="navbar-user">
-                <div class="user-info">
-                    <p>Xin chào,</p>
-                    <strong><?= htmlspecialchars($admin_fullname) ?></strong>
-                </div>
-                <a href="logout.php" class="logout-btn">Đăng xuất</a>
-            </div>
+    <!-- Stat cards -->
+    <div class="stat-cards">
+        <div class="stat-card">
+            <div class="sc-icon">👥</div><div class="sc-label">Tổng người dùng</div>
+            <div class="sc-value"><?= $total_users ?></div><div class="sc-sub">Điều phối & Khách hàng</div>
         </div>
+        <div class="stat-card" style="border-top-color:#27ae60">
+            <div class="sc-icon">📋</div><div class="sc-label">Điều Phối Viên</div>
+            <div class="sc-value" style="color:#27ae60"><?= $total_dp ?></div><div class="sc-sub">Đang hoạt động</div>
+        </div>
+        <div class="stat-card" style="border-top-color:#2980b9">
+            <div class="sc-icon">🏢</div><div class="sc-label">Khách Hàng</div>
+            <div class="sc-value" style="color:#2980b9"><?= $total_kh ?></div><div class="sc-sub">Đang hoạt động</div>
+        </div>
+        <div class="stat-card" style="border-top-color:#e67e22">
+            <div class="sc-icon">📊</div><div class="sc-label">Đăng Nhập Hôm Nay</div>
+            <div class="sc-value" style="color:#e67e22"><?= $logins_today ?></div><div class="sc-sub">Lượt truy cập</div>
+        </div>
+        <?php if($don_thang > 0 || true): ?>
+        <div class="stat-card" style="border-top-color:#8e44ad">
+            <div class="sc-icon">📦</div><div class="sc-label">Đơn Hàng Tháng Này</div>
+            <div class="sc-value" style="color:#8e44ad"><?= $don_thang ?></div><div class="sc-sub">Tháng <?= date('m/Y') ?></div>
+        </div>
+        <div class="stat-card" style="border-top-color:#1e8449">
+            <div class="sc-icon">💰</div><div class="sc-label">Doanh Thu Tháng</div>
+            <div class="sc-value" style="color:#1e8449;font-size:18px">₫<?= number_format($doanh_thu/1000000,1) ?>tr</div>
+            <div class="sc-sub">Tháng <?= date('m/Y') ?></div>
+        </div>
+        <?php endif; ?>
+    </div>
 
-        <div class="dashboard-content">
+    <!-- Truy cập nhanh -->
+    <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:24px">
+        <h3 style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:16px">⚡ Truy Cập Nhanh</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px">
+            <a href="admin_nguoi_dung.php" class="quick-link"><div class="ql-icon">👥</div><span>Người dùng</span></a>
+            <a href="admin_don_hang.php"   class="quick-link"><div class="ql-icon">📦</div><span>Đơn hàng</span></a>
+            <a href="admin_phuong_tien.php"class="quick-link"><div class="ql-icon">🚛</div><span>Phương tiện</span></a>
+            <a href="admin_bao_cao.php"    class="quick-link"><div class="ql-icon">📊</div><span>Báo cáo</span></a>
+            <a href="admin_nhat_ky.php"    class="quick-link"><div class="ql-icon">📋</div><span>Nhật ký</span></a>
+            <a href="admin_cai_dat.php"    class="quick-link"><div class="ql-icon">⚙️</div><span>Cài đặt</span></a>
+        </div>
+    </div>
 
-            <!-- Cards thống kê — giờ lấy số thật từ DB -->
-            <div class="dashboard-cards">
-                <div class="card">
-                    <div class="card-icon">👥</div>
-                    <h3>Tổng Người Dùng</h3>
-                    <p>Điều phối &amp; Khách hàng</p>
-                    <div class="card-value"><?= number_format($total_users) ?></div>
-                </div>
-                <div class="card">
-                    <div class="card-icon">📋</div>
-                    <h3>Điều Phối Viên</h3>
-                    <p>Đang hoạt động</p>
-                    <div class="card-value"><?= number_format($total_dieuphoI) ?></div>
-                </div>
-                <div class="card">
-                    <div class="card-icon">🏢</div>
-                    <h3>Khách Hàng</h3>
-                    <p>Đang hoạt động</p>
-                    <div class="card-value"><?= number_format($total_kh) ?></div>
-                </div>
-                <div class="card">
-                    <div class="card-icon">📊</div>
-                    <h3>Đăng Nhập Hôm Nay</h3>
-                    <p>Lượt truy cập</p>
-                    <div class="card-value"><?= number_format($logins_today) ?></div>
-                </div>
+    <!-- Log gần nhất -->
+    <div class="panels">
+        <div class="panel-card" style="grid-column:span 2">
+            <h3>📋 Nhật Ký Hoạt Động Gần Đây <a href="admin_nhat_ky.php">Xem tất cả →</a></h3>
+            <?php foreach($logs as $log):
+                $action_class = 'b-'.$log['action'];
+            ?>
+            <div class="log-row">
+                <span class="badge <?= $action_class ?>"><?= htmlspecialchars($log['action']) ?></span>
+                <span style="font-weight:600;min-width:120px"><?= htmlspecialchars($log['username']??'—') ?></span>
+                <span style="color:var(--muted);flex:1"><?= htmlspecialchars($log['detail']??'') ?></span>
+                <span style="color:#bdc3c7;white-space:nowrap"><?= htmlspecialchars($log['ip_address']??'') ?></span>
+                <span style="color:#bdc3c7;white-space:nowrap"><?= date('d/m H:i',strtotime($log['created_at'])) ?></span>
             </div>
-
-            <!-- Thông tin admin (giữ nguyên cũ) -->
-            <div class="content-section">
-                <h2>📋 Thông Tin Quản Trị Viên</h2>
-                <table class="info-table">
-                    <tr>
-                        <td>Tên đăng nhập:</td>
-                        <td><?= htmlspecialchars($admin_username) ?></td>
-                    </tr>
-                    <tr>
-                        <td>Họ và tên:</td>
-                        <td><?= htmlspecialchars($admin_fullname) ?></td>
-                    </tr>
-                    <tr>
-                        <td>Email:</td>
-                        <td><?= htmlspecialchars($admin_email) ?></td>
-                    </tr>
-                    <tr>
-                        <td>Quyền hạn:</td>
-                        <td><span style="background:#667eea;color:white;padding:4px 10px;border-radius:4px;font-weight:600">Super Admin</span></td>
-                    </tr>
-                    <tr>
-                        <td>Thời gian đăng nhập:</td>
-                        <td><?= htmlspecialchars($login_time) ?></td>
-                    </tr>
-                    <tr>
-                        <td>Phiên hoạt động:</td>
-                        <td style="color:#27ae60;font-weight:600">✓ Đang hoạt động</td>
-                    </tr>
-                </table>
-            </div>
-
-            <!-- Nhật ký hệ thống — dữ liệu thật từ audit_log -->
-            <div class="content-section">
-                <h2>📝 Nhật Ký Hoạt Động Gần Đây</h2>
-                <?php if (empty($logs)): ?>
-                    <p style="color:#999;font-size:14px">Chưa có nhật ký nào.</p>
-                <?php else: ?>
-                <table class="log-table">
-                    <thead>
-                        <tr>
-                            <th>Người dùng</th>
-                            <th>Hành động</th>
-                            <th>Chi tiết</th>
-                            <th>IP</th>
-                            <th>Thời gian</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <?php foreach ($logs as $log): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($log['username'] ?? '—') ?></td>
-                            <td>
-                                <span class="badge-action badge-<?= htmlspecialchars($log['action']) ?>">
-                                    <?= htmlspecialchars($log['action']) ?>
-                                </span>
-                            </td>
-                            <td><?= htmlspecialchars($log['detail'] ?? '') ?></td>
-                            <td><?= htmlspecialchars($log['ip_address'] ?? '') ?></td>
-                            <td><?= htmlspecialchars($log['created_at']) ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                    </tbody>
-                </table>
-                <?php endif; ?>
-            </div>
-
+            <?php endforeach; ?>
+            <?php if(empty($logs)): ?>
+                <div class="empty-state" style="padding:30px"><div class="ei">📋</div><p>Chưa có nhật ký.</p></div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
-</body>
-</html>
+</main>
+</div>
+</body></html>

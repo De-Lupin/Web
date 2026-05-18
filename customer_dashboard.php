@@ -1,11 +1,8 @@
 <?php
-// ============================================================
-// CUSTOMER_DASHBOARD.PHP - Bảng điều khiển Khách Hàng
-// ============================================================
+
 session_start();
 require 'config.php';
 
-// Chỉ khách hàng được vào
 require_role(['khachhang']);
 
 $full_name  = $_SESSION['full_name'] ?? 'Khách hàng';
