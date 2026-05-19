@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $message = "Vui lòng nhập đầy đủ thông tin!";
 
     } else {
-        // Prepared Statement — chống SQL Injection (giữ đúng code cũ)
+      
         $stmt = $conn->prepare(
             "SELECT id, username, password, full_name, email, role, is_active
              FROM users WHERE username = ? LIMIT 1"
@@ -105,8 +105,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập hệ thống</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Google Sign-In -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -141,9 +139,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                    placeholder="Nhập mật khẩu" required>
                             <button type="button" id="showbtn">Show</button>
                         </div>
-                        <div class="passwordactions">
-                            <button type="button" id="suggestbtn" class="actionbtn">Đề xuất mật khẩu mạnh</button>
-                        </div>
                         <div id="strengthmetertext"></div>
                     </div>
 
@@ -155,9 +150,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
 
                     <button type="submit" class="loginbtn">Đăng Nhập</button>
-
+                    <div style="text-align:center;margin-top:12px;font-size:13px">
+                    Chưa có tài khoản? <a href="dang_ky.php" style="color:#0984e3;font-weight:600">Đăng ký ngay</a>
+                    </div>
                     <div class="adminlink">
-                        <a href="admin.php">🔐 Quyền đăng nhập Admin</a>
+                        <a href="admin.php"> Quyền đăng nhập Admin</a>
                     </div>
 
                 </form>
