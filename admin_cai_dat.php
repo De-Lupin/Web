@@ -104,9 +104,6 @@ $active = 'cai_dat'; require 'sidebar_admin.php';
 .setting-label small { display:block; color:var(--muted); font-weight:400; font-size:11px; margin-top:2px; }
 .setting-input { padding:9px 14px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; outline:none; transition:.2s; width:100%; max-width:400px; }
 .setting-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(102,126,234,.1); }
-.backup-card { background:#f8f9fa; border-radius:10px; padding:16px 18px; border:1.5px solid var(--border); }
-.backup-card h4 { font-size:14px; font-weight:700; margin-bottom:8px; }
-.backup-card p  { font-size:13px; color:var(--muted); margin-bottom:14px; }
 </style>
 </head><body>
 <div class="app">
@@ -159,6 +156,11 @@ $active = 'cai_dat'; require 'sidebar_admin.php';
                 <button type="submit" name="doi_mat_khau" class="btn btn-primary">🔑 Đổi Mật Khẩu</button>
             </div>
         </form>
+    </div>
+
+    
+            </div>
+        </div>
     </div>
 
     <?php else: ?>

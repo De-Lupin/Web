@@ -120,7 +120,6 @@ $active = 'bao_cao'; require 'sidebar_admin.php';
             <option value="<?=$y?>" <?=$nam===$y?'selected':''?>><?=$y?></option>
             <?php endfor; ?>
         </select>
-        
     </form>
 
     <!-- Tổng quan KPI -->
