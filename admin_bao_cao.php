@@ -120,7 +120,7 @@ $active = 'bao_cao'; require 'sidebar_admin.php';
             <option value="<?=$y?>" <?=$nam===$y?'selected':''?>><?=$y?></option>
             <?php endfor; ?>
         </select>
-        <button type="submit" class="btn btn-primary">Xem báo cáo</button>
+        
     </form>
 
     <!-- Tổng quan KPI -->
