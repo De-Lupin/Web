@@ -83,7 +83,6 @@ $tab_labels = [
     'vehicle'  => ['icon'=>'🚛','label'=>'Phương tiện'],
     'security' => ['icon'=>'🔒','label'=>'Bảo mật'],
     'password' => ['icon'=>'🔑','label'=>'Đổi mật khẩu'],
-    'backup'   => ['icon'=>'💾','label'=>'Sao lưu dữ liệu'],
 ];
 
 $active = 'cai_dat'; require 'sidebar_admin.php';
@@ -160,50 +159,6 @@ $active = 'cai_dat'; require 'sidebar_admin.php';
                 <button type="submit" name="doi_mat_khau" class="btn btn-primary">🔑 Đổi Mật Khẩu</button>
             </div>
         </form>
-    </div>
-
-    <?php elseif ($tab === 'backup'): ?>
-    <!-- ── Tab sao lưu ── -->
-    <div class="setting-section">
-        <h3>💾 Sao Lưu & Phục Hồi Dữ Liệu</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-
-            <div class="backup-card">
-                <h4>📥 Xuất Database (SQL)</h4>
-                <p>Tải về toàn bộ dữ liệu database dưới dạng file SQL để sao lưu.</p>
-                <a href="admin_backup.php?action=export_sql" class="btn btn-primary">📥 Xuất file SQL</a>
-            </div>
-
-            <div class="backup-card">
-                <h4>📊 Xuất Báo Cáo (Excel)</h4>
-                <p>Tải về dữ liệu đơn hàng, khách hàng dưới dạng file Excel.</p>
-                <a href="admin_backup.php?action=export_excel" class="btn btn-success">📊 Xuất Excel</a>
-            </div>
-
-            <div class="backup-card" style="border-color:#f5c6cb">
-                <h4>📤 Nhập Database</h4>
-                <p style="color:#e74c3c">⚠️ Sẽ ghi đè dữ liệu hiện tại. Hãy sao lưu trước!</p>
-                <form method="POST" enctype="multipart/form-data" action="admin_backup.php">
-                    <input type="file" name="sql_file" accept=".sql" style="font-size:13px;margin-bottom:10px;display:block">
-                    <button type="submit" name="import_sql" class="btn btn-danger" onclick="return confirm('Chắc chắn nhập? Dữ liệu cũ sẽ bị thay thế!')">📤 Nhập SQL</button>
-                </form>
-            </div>
-
-            <div class="backup-card">
-                <h4>📋 Thông Tin Database</h4>
-                <?php
-                $tables = ['users','don_hang','xe','tai_xe','tuyen_duong','chuyen_xe','audit_log','thong_bao','system_settings'];
-                foreach($tables as $t):
-                    $r = $conn->query("SELECT COUNT(*) AS c FROM `$t`");
-                    $c = $r ? $r->fetch_assoc()['c'] : '—';
-                ?>
-                <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #f4f6f8">
-                    <span style="font-family:monospace;color:var(--primary)"><?=$t?></span>
-                    <span style="font-weight:700"><?= number_format((int)$c) ?> bản ghi</span>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
     </div>
 
     <?php else: ?>
