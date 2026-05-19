@@ -72,8 +72,6 @@ $active = 'bao_cao'; require 'sidebar_admin.php';
 .rank-num{width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
 .rank-num.gold{background:#f39c12}.rank-num.silver{background:#95a5a6}.rank-num.bronze{background:#e67e22}
 .bar-fill{height:8px;border-radius:4px;background:var(--primary);transition:.3s}
-.export-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;transition:.2s}
-.export-btn:hover{background:#1e8449}
 </style>
 </head><body>
 <div class="app">
@@ -84,9 +82,6 @@ $active = 'bao_cao'; require 'sidebar_admin.php';
     <div><div class="topbar-title">📊 Báo Cáo & Thống Kê</div>
     <div class="breadcrumb"><a href="admin_dashboard.php">Dashboard</a> › Báo cáo</div></div>
     <div style="display:flex;gap:10px;align-items:center">
-        <a href="?<?= http_build_query(array_merge($_GET,['export'=>'excel'])) ?>" class="export-btn">
-            📥 Xuất Excel
-        </a>
         <div class="user-chip">
             <div class="chip-avatar"><?= mb_strtoupper(mb_substr($_SESSION['full_name']??'A',0,1)) ?></div>
             <div><div class="chip-name"><?= htmlspecialchars($_SESSION['full_name']??'Admin') ?></div>
