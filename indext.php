@@ -162,15 +162,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 </form>
 
-                <div class="social-login">
-                    <p>Hoặc đăng nhập bằng:</p>
-                    <div id="g_id_onload"
-                         data-client_id="YOUR_GOOGLE_CLIENT_ID"
-                         data-callback="handleCredentialResponse">
-                    </div>
-                    <div class="g_id_signin" data-type="standard"></div>
-                </div>
-
             </div>
         </div>
     </div>
