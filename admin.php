@@ -1,12 +1,7 @@
 <?php
-// ============================================================
-// ADMIN.PHP - Đăng nhập dành riêng cho Admin
-// Giữ nguyên giao diện cũ — sửa logic: kết nối MySQL + 2FA thật
-// ============================================================
 session_start();
 require 'config.php';
 
-// Đã đăng nhập admin rồi → vào dashboard
 if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'admin') {
     header("Location: admin_dashboard.php");
     exit();
@@ -16,11 +11,9 @@ $error_message   = "";
 $success_message = "";
 $show_verification_form = false;
 
-// Kiểm tra đang ở bước 2 (xác minh OTP)
 if (isset($_SESSION['admin_pending_verification']) && $_SESSION['admin_pending_verification'] === true) {
     $show_verification_form = true;
 
-    // Xử lý nhập mã OTP
     if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify_code'])) {
         $entered_code = trim($_POST['verify_code'] ?? '');
 
@@ -28,7 +21,6 @@ if (isset($_SESSION['admin_pending_verification']) && $_SESSION['admin_pending_v
             $error_message = "Vui lòng nhập mã xác minh!";
 
         } elseif (time() - $_SESSION['admin_verification_time'] > 300) {
-            // Hết hạn 5 phút
             unset($_SESSION['admin_pending_verification'], $_SESSION['admin_verification_code'],
                   $_SESSION['admin_temp_uid'],            $_SESSION['admin_verification_time']);
             $show_verification_form = false;
@@ -38,7 +30,6 @@ if (isset($_SESSION['admin_pending_verification']) && $_SESSION['admin_pending_v
             $error_message = "Mã xác minh không chính xác!";
 
         } else {
-            // ✅ XÁC MINH THÀNH CÔNG — lấy thông tin admin từ DB
             $uid  = $_SESSION['admin_temp_uid'];
             $stmt = $conn->prepare(
                 "SELECT id, username, full_name, email FROM users WHERE id = ? AND role = 'admin' LIMIT 1"
@@ -56,11 +47,9 @@ if (isset($_SESSION['admin_pending_verification']) && $_SESSION['admin_pending_v
             $_SESSION['role']       = 'admin';
             $_SESSION['login_time'] = time();
 
-            // Xóa dữ liệu tạm
             unset($_SESSION['admin_pending_verification'], $_SESSION['admin_verification_code'],
                   $_SESSION['admin_temp_uid'],            $_SESSION['admin_verification_time']);
 
-            // Cập nhật last_login + ghi log
             $upd = $conn->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
             $upd->bind_param("i", $admin['id']); $upd->execute(); $upd->close();
             write_audit_log($conn, $admin['id'], $admin['username'], 'ADMIN_LOGIN', 'Đăng nhập Admin thành công (2FA)');
@@ -71,7 +60,6 @@ if (isset($_SESSION['admin_pending_verification']) && $_SESSION['admin_pending_v
     }
 }
 
-// Xử lý nút "Quay lại" ở bước 2
 if (isset($_POST['back_step1'])) {
     unset($_SESSION['admin_pending_verification'], $_SESSION['admin_verification_code'],
           $_SESSION['admin_temp_uid'],            $_SESSION['admin_verification_time']);
@@ -79,7 +67,6 @@ if (isset($_POST['back_step1'])) {
     exit();
 }
 
-// ── BƯỚC 1: Kiểm tra username / password / email ─────────
 if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['verify_code']) && !isset($_POST['back_step1'])) {
     $admin_username = trim($_POST['admin_username'] ?? '');
     $admin_password = trim($_POST['admin_password'] ?? '');
@@ -89,7 +76,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['verify_code']) && !is
         $error_message = "Vui lòng nhập đầy đủ thông tin!";
 
     } else {
-        // Truy vấn MySQL — chỉ lấy tài khoản role = admin
         $stmt = $conn->prepare(
             "SELECT id, username, password, email, full_name, is_active
              FROM users WHERE username = ? AND role = 'admin' LIMIT 1"
@@ -115,7 +101,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['verify_code']) && !is
             write_audit_log($conn, $admin['id'], $admin_username, 'ADMIN_LOGIN_FAILED', 'Sai mật khẩu');
 
         } else {
-            // ✅ BƯỚC 1 OK — Tạo mã OTP 6 số
             $otp = str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
 
             $_SESSION['admin_pending_verification']  = true;
@@ -123,10 +108,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['verify_code']) && !is
             $_SESSION['admin_temp_uid']              = $admin['id'];
             $_SESSION['admin_verification_time']     = time();
 
-            // Trong thực tế: gửi email thật bằng PHPMailer hoặc mail()
-            // mail($admin['email'], 'Mã xác minh Admin', "Mã của bạn: $otp");
-
-            // DEMO: Hiển thị mã trực tiếp để test
             $success_message = "Mã xác minh đã gửi đến: <b>" . htmlspecialchars($admin['email']) . "</b><br>"
                              . "<small style='color:#555'>(Demo) Mã của bạn: <b style='font-size:18px;color:#c0392b'>$otp</b></small>";
             $show_verification_form = true;
@@ -143,7 +124,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['verify_code']) && !is
     <title>Đăng nhập Admin</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* ── Giữ nguyên style cũ, bổ sung thêm countdown ── */
         .admin-login-wrapper {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
@@ -263,7 +243,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['verify_code']) && !is
             transition: 0.3s;
         }
         .resend-btn:hover { background-color: #7f8c8d; }
-        /* Đếm ngược */
         .countdown-wrap {
             text-align: center;
             margin-top: 12px;
@@ -295,7 +274,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['verify_code']) && !is
             <?php endif; ?>
 
             <?php if (!$show_verification_form): ?>
-            <!-- BƯỚC 1: Form đăng nhập -->
             <form action="<?= htmlspecialchars($_SERVER["PHP_SELF"]) ?>" method="POST">
                 <div class="admin-form-group">
                     <label>Tên đăng nhập Admin</label>
@@ -318,7 +296,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['verify_code']) && !is
             </div>
 
             <?php else: ?>
-            <!-- BƯỚC 2: Nhập mã OTP -->
             <form action="<?= htmlspecialchars($_SERVER["PHP_SELF"]) ?>" method="POST">
                 <div class="admin-form-group">
                     <label>Mã Xác Minh 6 Chữ Số</label>
@@ -332,7 +309,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['verify_code']) && !is
                     Mã hết hạn sau: <span id="otp_timer">05:00</span>
                 </div>
                 <br>
-                <button type="submit" class="admin-login-btn">✅ Xác Minh Đăng Nhập</button>
+                <button type="submit" class="admin-login-btn"> Xác Minh Đăng Nhập</button>
             </form>
 
             <div style="text-align:center;margin-top:16px">
@@ -350,7 +327,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['verify_code']) && !is
 
 <?php if ($show_verification_form): ?>
 <script>
-// Đếm ngược 5 phút
 let secs = 300;
 const el = document.getElementById('otp_timer');
 const t  = setInterval(() => {

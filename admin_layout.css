@@ -1,6 +1,4 @@
-/* ============================================================
-   admin_layout.css — CSS dùng chung module Admin
-   ============================================================ */
+
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
 :root {
@@ -20,10 +18,8 @@
 
 body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:var(--bg); color:var(--text); }
 
-/* ── LAYOUT ── */
 .app { display:flex; min-height:100vh; }
 
-/* ── SIDEBAR ── */
 .sidebar {
     width:var(--sidebar-w); flex-shrink:0;
     background:var(--sidebar-bg);
@@ -83,10 +79,8 @@ body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:var(-
 }
 .btn-logout:hover { background:rgba(231,76,60,.4); }
 
-/* ── MAIN ── */
 .main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-width:0; }
 
-/* ── TOPBAR ── */
 .topbar {
     background:var(--white); padding:14px 28px;
     display:flex; align-items:center; justify-content:space-between;
@@ -109,7 +103,6 @@ body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:var(-
 .chip-name { font-size:13px; font-weight:700; color:var(--primary); }
 .chip-role { font-size:11px; color:#764ba2; font-weight:600; }
 
-/* ── PAGE ── */
 .content { padding:24px 28px; flex:1; }
 .page-header {
     display:flex; align-items:center; justify-content:space-between;
@@ -117,7 +110,6 @@ body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:var(-
 }
 .page-header h1 { font-size:20px; font-weight:700; }
 
-/* ── STAT CARDS ── */
 .stat-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px; margin-bottom:24px; }
 .stat-card {
     background:var(--white); border-radius:12px; padding:22px;
@@ -130,7 +122,6 @@ body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:var(-
 .stat-card .sc-value { font-size:30px; font-weight:800; color:var(--primary); margin:5px 0 3px; }
 .stat-card .sc-sub   { font-size:12px; color:var(--muted); }
 
-/* ── TABLE ── */
 .table-wrap { background:var(--white); border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.06); overflow:hidden; }
 .table-toolbar {
     padding:14px 18px; display:flex; align-items:center;
@@ -150,7 +141,6 @@ tbody td { padding:12px 16px; border-bottom:1px solid #f4f6f8; vertical-align:mi
 tbody tr:hover td { background:#fafbff; }
 tbody tr:last-child td { border-bottom:none; }
 
-/* ── BADGES ── */
 .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
 .b-admin     { background:#e8e0ff; color:#4f3ba9; }
 .b-dieuphoI  { background:#d5f5e3; color:#1e8449; }
@@ -166,7 +156,6 @@ tbody tr:last-child td { border-bottom:none; }
 .b-bao_duong { background:#fef9e7; color:#b7770d; }
 .b-hong      { background:#fdf2f0; color:#c0392b; }
 
-/* ── BUTTONS ── */
 .btn {
     display:inline-flex; align-items:center; gap:6px;
     padding:9px 18px; border-radius:8px; border:none;
@@ -185,7 +174,6 @@ tbody tr:last-child td { border-bottom:none; }
 .btn-ghost:hover { border-color:var(--primary); color:var(--primary); }
 .btn-sm { padding:5px 12px; font-size:12px; }
 
-/* ── FORM ── */
 .form-card { background:var(--white); border-radius:12px; padding:26px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
 .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 .form-grid.col1 { grid-template-columns:1fr; }
@@ -205,13 +193,11 @@ tbody tr:last-child td { border-bottom:none; }
 .field textarea { resize:vertical; min-height:80px; }
 .form-actions { display:flex; gap:10px; margin-top:22px; justify-content:flex-end; }
 
-/* ── ALERT ── */
 .alert { padding:12px 16px; border-radius:8px; font-size:13px; margin-bottom:18px; display:flex; align-items:flex-start; gap:8px; }
 .alert-success { background:#eafaf1; border:1px solid #b2dfcc; color:#1e8449; }
 .alert-danger  { background:#fdf2f0; border:1px solid #f5c6cb; color:#c0392b; }
 .alert-warning { background:#fef9e7; border:1px solid #fad7a0; color:#b7770d; }
 
-/* ── MODAL ── */
 .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:999; align-items:center; justify-content:center; }
 .modal-overlay.open { display:flex; }
 .modal-box { background:var(--white); border-radius:14px; padding:28px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.3); }
@@ -220,11 +206,9 @@ tbody tr:last-child td { border-bottom:none; }
 .modal-close { background:none; border:none; font-size:22px; cursor:pointer; color:var(--muted); }
 .modal-close:hover { color:var(--danger); }
 
-/* ── EMPTY ── */
 .empty-state { text-align:center; padding:60px 20px; color:var(--muted); }
 .empty-state .ei { font-size:52px; margin-bottom:14px; }
 
-/* ── PAGINATION ── */
 .pagination { display:flex; gap:6px; justify-content:flex-end; padding:14px 18px; border-top:1px solid var(--border); }
 .page-btn { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; cursor:pointer; border:1.5px solid var(--border); background:var(--white); color:var(--text); text-decoration:none; transition:.2s; }
 .page-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }

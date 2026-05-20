@@ -2,7 +2,6 @@
 session_start(); require 'config.php'; require_role(['dieuphoI']);
 $msg = '';
 
-// Thêm tuyến
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['them_tuyen'])) {
     $ma    = strtoupper(trim($_POST['ma_tuyen']   ?? ''));
     $ten   = trim($_POST['ten_tuyen']   ?? '');
@@ -22,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['them_tuyen'])) {
     } else $msg=['type'=>'danger','text'=>'Vui lòng nhập đầy đủ thông tin!'];
 }
 
-// Sửa tuyến
+
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['sua_tuyen'])) {
     $id  = (int)$_POST['tuyen_id'];
     $ten = trim($_POST['ten_tuyen']   ?? '');
@@ -128,7 +127,6 @@ $active = 'tuyen_duong'; require 'sidebar_dieuphoI.php';
 </main>
 </div>
 
-<!-- Modal thêm tuyến -->
 <div class="modal-overlay" id="modal_them">
 <div class="modal-box">
     <div class="modal-header">
@@ -161,7 +159,7 @@ $active = 'tuyen_duong'; require 'sidebar_dieuphoI.php';
 </div>
 </div>
 
-<!-- Modal sửa tuyến -->
+
 <div class="modal-overlay" id="modal_sua">
 <div class="modal-box" style="max-width:480px">
     <div class="modal-header">

@@ -2,7 +2,6 @@
 session_start(); require 'config.php'; require_role(['admin']);
 $msg = '';
 
-// Thêm user
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['them_user'])) {
     $un   = trim($_POST['username']  ?? '');
     $pw   = trim($_POST['password']  ?? '');
@@ -20,7 +19,6 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['them_user'])) {
     } else $msg=['type'=>'danger','text'=>'Vui lòng nhập đầy đủ thông tin!'];
 }
 
-// Sửa user
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['sua_user'])) {
     $id   = (int)$_POST['user_id'];
     $fn   = trim($_POST['full_name'] ?? '');
@@ -38,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['sua_user'])) {
     $msg=['type'=>'success','text'=>'Đã cập nhật tài khoản thành công!'];
 }
 
-// Khoá/Mở khoá
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['toggle_active'])) {
     $id  = (int)$_POST['user_id'];
     $act = (int)$_POST['current_active'];
@@ -47,14 +44,12 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['toggle_active'])) {
     $msg=['type'=>'success','text'=>$new?'Đã mở khóa tài khoản!':'Đã khóa tài khoản!'];
 }
 
-// Xóa user
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['xoa_user'])) {
     $id = (int)$_POST['user_id'];
     $conn->query("DELETE FROM users WHERE id=$id AND role!='admin'");
     $msg=['type'=>'success','text'=>'Đã xóa tài khoản!'];
 }
 
-// Lọc & tìm kiếm
 $search = trim($_GET['search'] ?? '');
 $role_f = $_GET['role']        ?? '';
 $status = $_GET['status']      ?? '';
@@ -102,7 +97,6 @@ $active = 'nguoi_dung'; require 'sidebar_admin.php';
 <div class="content">
     <?php if(!empty($msg)): ?><div class="alert alert-<?=$msg['type']?>"><?=$msg['text']?></div><?php endif; ?>
 
-    <!-- Stat -->
     <div class="stat-cards" style="margin-bottom:20px">
         <div class="stat-card"><div class="sc-icon">👥</div><div class="sc-label">Tổng</div>
             <div class="sc-value"><?=$conn->query("SELECT COUNT(*) AS c FROM users WHERE role!='admin'")->fetch_assoc()['c']?></div><div class="sc-sub">Tài khoản</div></div>
@@ -194,7 +188,6 @@ $active = 'nguoi_dung'; require 'sidebar_admin.php';
 </main>
 </div>
 
-<!-- Modal thêm user -->
 <div class="modal-overlay" id="modal_them">
 <div class="modal-box">
     <div class="modal-header"><h3>➕ Thêm Tài Khoản Mới</h3>
@@ -209,7 +202,6 @@ $active = 'nguoi_dung'; require 'sidebar_admin.php';
             <div class="field span2"><label>Phân quyền</label>
                 <select name="role">
                     <option value="dieuphoI">📋 Điều Phối Viên</option>
-                    <option value="khachhang">🏢 Khách Hàng</option>
                 </select>
             </div>
         </div>
@@ -221,7 +213,6 @@ $active = 'nguoi_dung'; require 'sidebar_admin.php';
 </div>
 </div>
 
-<!-- Modal sửa user -->
 <div class="modal-overlay" id="modal_sua">
 <div class="modal-box">
     <div class="modal-header"><h3>✏️ Chỉnh Sửa Tài Khoản</h3>

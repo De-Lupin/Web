@@ -1,15 +1,8 @@
 <?php
-// ============================================================
-// REGISTER.PHP - Trang đăng ký tài khoản
-// Dành cho: Khách hàng (khachhang) và Điều phối viên (dieuphoI)
-// Lưu ý: dieuphoI cần được Admin duyệt (is_active = 0) hoặc
-//         có thể cho active ngay tùy chính sách — hiện tại
-//         khachhang active ngay, dieuphoI cần Admin duyệt.
-// ============================================================
+
 session_start();
 require 'config.php';
 
-// Đã đăng nhập rồi → về dashboard
 if (isset($_SESSION['user_id'])) {
     $r = $_SESSION['role'] ?? '';
     if ($r === 'admin')    { header("Location: admin_dashboard.php"); exit(); }
@@ -19,10 +12,10 @@ if (isset($_SESSION['user_id'])) {
 
 $errors  = [];
 $success = '';
-$old     = []; // Lưu lại giá trị cũ khi submit lỗi
+$old     = []; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Lấy dữ liệu từ form
+   
     $username  = trim($_POST['username']  ?? '');
     $full_name = trim($_POST['full_name'] ?? '');
     $email     = trim($_POST['email']     ?? '');
@@ -31,10 +24,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password  = $_POST['password']       ?? '';
     $password2 = $_POST['password2']      ?? '';
 
-    // Lưu lại để điền lại form
+   
     $old = compact('username','full_name','email','phone','role');
 
-    // ── Validation ──────────────────────────────────────────
+   
     if (empty($username)) {
         $errors[] = "Tên đăng nhập không được để trống!";
     } elseif (!preg_match('/^[a-zA-Z0-9_]{4,50}$/', $username)) {
@@ -73,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Xác nhận mật khẩu không khớp!";
     }
 
-    // Kiểm tra username/email trùng (chỉ khi không có lỗi cơ bản)
+   
     if (empty($errors)) {
         $chk = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ? LIMIT 1");
         $chk->bind_param("ss", $username, $email);
@@ -90,12 +83,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $chk->close();
     }
 
-    // ── Lưu vào DB nếu không có lỗi ────────────────────────
+    
     if (empty($errors)) {
         $hash = password_hash($password, PASSWORD_DEFAULT);
 
-        // Khách hàng: active ngay
-        // Điều phối viên: chờ Admin duyệt (is_active = 0)
+       
         $is_active = ($role === 'khachhang') ? 1 : 0;
 
         $stmt = $conn->prepare(
@@ -114,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $success = "Đăng ký thành công! Tài khoản Điều phối viên cần được <strong>Admin duyệt</strong> trước khi sử dụng. Vui lòng chờ thông báo.";
             }
-            $old = []; // Xóa dữ liệu cũ sau khi đăng ký thành công
+            $old = []; 
         } else {
             $errors[] = "Lỗi hệ thống: " . $stmt->error;
         }
@@ -141,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 30px 16px;
         }
 
-        /* ── Wrapper 2 cột ── */
+       
         .reg-wrapper {
             display: flex;
             width: 100%;
@@ -153,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: #fff;
         }
 
-        /* ── Cột trái: Banner ── */
+       
         .reg-banner {
             flex: 0 0 340px;
             background: linear-gradient(160deg, #667eea 0%, #764ba2 100%);
@@ -193,7 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: rgba(255,255,255,.15);
         }
 
-        /* ── Cột phải: Form ── */
+       
         .reg-form-area {
             flex: 1;
             padding: 40px 36px;
@@ -212,7 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 24px;
         }
 
-        /* ── Alert ── */
+        
         .alert {
             padding: 13px 16px;
             border-radius: 8px;
@@ -225,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .alert ul { padding-left: 18px; margin-top: 6px; }
         .alert ul li { margin: 4px 0; }
 
-        /* ── Role Selector ── */
+        
         .role-selector {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -256,7 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .role-option input:checked + .role-card .rc-name { color: #667eea; }
         .role-card:hover { border-color: #aab3f0; }
 
-        /* ── Form Grid ── */
+       
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -290,7 +282,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .field input.error-input { border-color: #e74c3c; }
 
-        /* Strength meter */
+       
         .pw-strength {
             height: 4px;
             border-radius: 2px;
@@ -306,10 +298,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .pw-hint { font-size: 11px; color: #7f8c8d; margin-top: 4px; }
 
-        /* Password match indicator */
+        
         .match-msg { font-size: 12px; margin-top: 4px; }
 
-        /* Note box */
+      
         .note-box {
             background: #fff8e1;
             border: 1px solid #ffe082;
@@ -322,7 +314,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .note-box.show { display: block; }
 
-        /* Submit button */
+        
         .btn-submit {
             width: 100%;
             padding: 13px;
@@ -350,7 +342,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-top: 14px;
         }
 
-        /* ── Responsive ── */
+      
         @media (max-width: 750px) {
             .reg-wrapper { flex-direction: column; }
             .reg-banner  { flex: 0 0 auto; padding: 30px 24px; }
@@ -364,28 +356,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="reg-wrapper">
 
-    <!-- ── Banner trái ── -->
+    
     <aside class="reg-banner">
         <div class="truck-icon">🚛</div>
         <h2>Vận Tải<br>Hàng Hóa</h2>
         <p>Đăng ký tài khoản để truy cập hệ thống quản lý vận tải chuyên nghiệp</p>
 
         <div class="feature-list">
-            <div class="feature-item"><span class="fi">📦</span> Theo dõi đơn hàng thời gian thực</div>
+            <div class="feature-item"><span class="fi">📦</span> Theo dõi đơn hàng</div>
             <div class="feature-item"><span class="fi">💰</span> Xem công nợ và thanh toán</div>
-            <div class="feature-item"><span class="fi">🔔</span> Nhận thông báo tự động</div>
-            <div class="feature-item"><span class="fi">📊</span> Báo cáo & thống kê chi tiết</div>
+            <div class="feature-item"><span class="fi">🔔</span> Nhận thông báo</div>
+            <div class="feature-item"><span class="fi">📊</span> Báo cáo & thống kê</div>
         </div>
 
         <a href="indext.php" class="login-link">← Đã có tài khoản? Đăng nhập</a>
     </aside>
 
-    <!-- ── Form phải ── -->
+   
     <main class="reg-form-area">
         <h1>Tạo Tài Khoản Mới</h1>
         <p class="subtitle">Điền thông tin bên dưới để đăng ký sử dụng hệ thống</p>
 
-        <!-- Thông báo lỗi / thành công -->
+       
         <?php if (!empty($errors)): ?>
         <div class="alert alert-error">
             <strong>⚠️ Vui lòng kiểm tra lại:</strong>
@@ -403,10 +395,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         <?php endif; ?>
 
-        <?php if (empty($success)): // Chỉ hiện form khi chưa đăng ký thành công ?>
+        <?php if (empty($success)):?>
         <form method="POST" novalidate id="regForm">
 
-            <!-- Chọn loại tài khoản -->
+            
             <div style="margin-bottom:6px">
                 <label style="font-size:13px;font-weight:600;color:#2c3e50">
                     Loại tài khoản <span style="color:#e74c3c">*</span>
@@ -433,7 +425,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </label>
             </div>
 
-            <!-- Ghi chú cho điều phối viên -->
+          
             <div class="note-box <?= (($old['role'] ?? '') === 'dieuphoI') ? 'show' : '' ?>" id="noteDP">
                 ⚠️ <strong>Lưu ý:</strong> Tài khoản Điều phối viên cần được <strong>Admin duyệt</strong> trước khi đăng nhập được. Sau khi đăng ký, vui lòng liên hệ quản trị viên để kích hoạt.
             </div>
@@ -441,7 +433,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div style="margin:20px 0 4px;border-top:1px solid #f0f0f0"></div>
 
             <div class="form-grid">
-                <!-- Username -->
+              
                 <div class="field">
                     <label>Tên đăng nhập <span class="req">*</span></label>
                     <input type="text" name="username" id="username"
@@ -450,7 +442,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <span class="pw-hint">Chỉ gồm chữ, số, dấu gạch dưới (4–50 ký tự)</span>
                 </div>
 
-                <!-- Họ tên -->
+              
                 <div class="field">
                     <label>Họ và tên <span class="req">*</span></label>
                     <input type="text" name="full_name"
@@ -458,7 +450,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                            maxlength="100">
                 </div>
 
-                <!-- Email -->
+                
                 <div class="field">
                     <label>Email <span class="req">*</span></label>
                     <input type="email" name="email"
@@ -466,7 +458,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                            maxlength="100" autocomplete="email">
                 </div>
 
-                <!-- Điện thoại -->
+              
                 <div class="field">
                     <label>Số điện thoại</label>
                     <input type="text" name="phone"
@@ -474,7 +466,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                            maxlength="15">
                 </div>
 
-                <!-- Mật khẩu -->
+                
                 <div class="field">
                     <label>Mật khẩu <span class="req">*</span></label>
                     <input type="password" name="password" id="pw"
@@ -485,7 +477,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <span class="pw-hint" id="pwHint">Nhập mật khẩu để xem độ mạnh</span>
                 </div>
 
-                <!-- Xác nhận mật khẩu -->
+              
                 <div class="field">
                     <label>Xác nhận mật khẩu <span class="req">*</span></label>
                     <input type="password" name="password2" id="pw2"
@@ -505,7 +497,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         </form>
         <?php else: ?>
-        <!-- Nút quay về đăng nhập sau khi đăng ký thành công -->
+       
         <div style="text-align:center;margin-top:20px">
             <a href="indext.php" style="
                 display:inline-block;padding:13px 32px;
@@ -520,13 +512,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script>
-// ── Hiện/ẩn ghi chú điều phối viên ──
+
 function onRoleChange(el) {
     const note = document.getElementById('noteDP');
     note.classList.toggle('show', el.value === 'dieuphoI');
 }
 
-// ── Kiểm tra độ mạnh mật khẩu ──
+
 function checkStrength(pw) {
     const bar  = document.getElementById('pwBar');
     const hint = document.getElementById('pwHint');
@@ -552,7 +544,7 @@ function checkStrength(pw) {
     checkMatch();
 }
 
-// ── Kiểm tra khớp mật khẩu ──
+
 function checkMatch() {
     const pw    = document.getElementById('pw').value;
     const pw2   = document.getElementById('pw2').value;
@@ -567,7 +559,7 @@ function checkMatch() {
     }
 }
 
-// ── Validation phía client trước khi submit ──
+
 document.getElementById('regForm')?.addEventListener('submit', function(e) {
     const pw  = document.getElementById('pw').value;
     const pw2 = document.getElementById('pw2').value;

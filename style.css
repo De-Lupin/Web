@@ -17,10 +17,10 @@ body {
     display: flex;
     width: 100%;
     max-width: 1100px;
-    /* BỎ height: 580px — để tự co giãn theo nội dung */
+
     min-height: 580px;
     border-radius: 20px;
-    /* Đổi overflow: hidden → overflow: visible để không cắt nội dung */
+  
     overflow: visible;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     background: #ffffff;
@@ -31,7 +31,7 @@ body {
     background-image: url('giaodien1.jpg'); 
     background-size: cover;
     background-position: center;
-    /* Bo góc trái vì overflow wrapper đã đổi sang visible */
+
     border-radius: 20px 0 0 20px;
 }
 
@@ -39,12 +39,10 @@ body {
     flex: 1; 
     display: flex;
     justify-content: center;
-    align-items: flex-start;      /* Căn từ trên xuống, không bị đẩy giữa gây mất tiêu đề */
+    align-items: flex-start;     
     padding: 40px;
     background: #ffffff;
-    /* Bo góc phải */
     border-radius: 0 20px 20px 0;
-    /* Cho phép scroll riêng cột phải nếu màn hình nhỏ */
     overflow-y: auto;
 }
 
@@ -183,26 +181,26 @@ body {
     background: #74b9ff;
 }
 
-/* --- Phần thiết kế cho nút Admin --- */
+
 .adminlink {
     margin-top: 20px;
     text-align: center;
 }
 
 .adminlink a {
-    color: #a0522d; /* Mã màu nâu (Sienna) */
-    font-size: 13px; /* Chữ nhỏ hơn */
+    color: #a0522d; 
+    font-size: 13px; 
     text-decoration: none;
     font-weight: 500;
     transition: 0.3s;
 }
 
 .adminlink a:hover {
-    color: #8b4513; /* Chuyển màu nâu đậm hơn khi rê chuột vào */
-    text-decoration: underline; /* Hiện gạch chân khi rê chuột */
+    color: #8b4513;
+    text-decoration: underline; 
 }
 
-/* --- Phần thiết kế cho đăng nhập xã hội --- */
+
 .social-login {
     margin-top: 30px;
     text-align: center;
@@ -214,7 +212,6 @@ body {
     color: #666;
 }
 
-/* --- Nút đăng nhập Facebook và Google --- */
 .social-login {
     display: flex;
     flex-direction: column;

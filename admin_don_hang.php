@@ -1,7 +1,6 @@
 <?php
 session_start(); require 'config.php'; require_role(['admin']);
 
-// Cập nhật trạng thái đơn
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['cap_nhat_tt'])) {
     $id = (int)$_POST['don_id'];
     $tt = $_POST['trang_thai'];
@@ -11,7 +10,6 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['cap_nhat_tt'])) {
 
 $msg = $msg ?? null;
 
-// Thống kê
 $stats = [];
 foreach(['cho_duyet','dang_xu_ly','dang_lay_hang','dang_van_chuyen','da_giao','hoan_thanh','da_thanh_toan','huy'] as $tt)
     $stats[$tt] = $conn->query("SELECT COUNT(*) AS c FROM don_hang WHERE trang_thai='$tt'")->fetch_assoc()['c']??0;
@@ -19,7 +17,6 @@ foreach(['cho_duyet','dang_xu_ly','dang_lay_hang','dang_van_chuyen','da_giao','h
 $doanh_thu_thang = $conn->query("SELECT COALESCE(SUM(doanh_thu),0) AS t FROM don_hang WHERE MONTH(ngay_tao)=MONTH(CURDATE()) AND YEAR(ngay_tao)=YEAR(CURDATE()) AND trang_thai!='huy'")->fetch_assoc()['t']??0;
 $loi_nhuan_thang = $conn->query("SELECT COALESCE(SUM(loi_nhuan),0) AS t FROM don_hang WHERE MONTH(ngay_tao)=MONTH(CURDATE()) AND trang_thai NOT IN ('huy','cho_duyet')")->fetch_assoc()['t']??0;
 
-// Bộ lọc
 $search = trim($_GET['search']??'');
 $tt_f   = $_GET['trang_thai']??'';
 $page   = max(1,(int)($_GET['page']??1));

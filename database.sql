@@ -1,8 +1,4 @@
--- ============================================================
--- DATABASE.SQL - Hệ Thống Quản Lý Vận Tải Hàng Hóa
--- 3 role: admin, dieuphoI (Điều phối), khachhang (Khách hàng)
--- Công cụ: XAMPP (MySQL)
--- ============================================================
+
 
 CREATE DATABASE IF NOT EXISTS quanly
     CHARACTER SET utf8mb4
@@ -10,10 +6,6 @@ CREATE DATABASE IF NOT EXISTS quanly
 
 USE quanly;
 
--- ============================================================
--- BẢNG USERS
--- Dùng cột `role` để phân quyền, không cần nhiều bảng riêng
--- ============================================================
 CREATE TABLE IF NOT EXISTS users (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     username    VARCHAR(50)  NOT NULL UNIQUE,
@@ -27,9 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     last_login  DATETIME DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ============================================================
--- BẢNG AUDIT_LOG - Nhật ký hành động người dùng (phân hệ 3.1)
--- ============================================================
+
 CREATE TABLE IF NOT EXISTS audit_log (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     user_id     INT         DEFAULT NULL,
@@ -41,7 +31,3 @@ CREATE TABLE IF NOT EXISTS audit_log (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ============================================================
--- Tài khoản mẫu sẽ được tạo qua file create_test_users.php
--- Mật khẩu chung: 123456
--- ============================================================

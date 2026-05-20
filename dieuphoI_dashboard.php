@@ -2,7 +2,7 @@
 session_start(); require 'config.php'; require_role(['dieuphoI']);
 $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i',$_SESSION['login_time']) : 'N/A';
 
-// Thống kê
+
 $s = [];
 foreach (['cho_duyet','dang_xu_ly','dang_lay_hang','dang_van_chuyen','da_giao','hoan_thanh','huy'] as $tt)
     $s[$tt] = $conn->query("SELECT COUNT(*) AS c FROM don_hang WHERE trang_thai='$tt'")->fetch_assoc()['c']??0;
@@ -11,16 +11,15 @@ $xe_san_sang = $conn->query("SELECT COUNT(*) AS c FROM xe WHERE tinh_trang='san_
 $xe_chay     = $conn->query("SELECT COUNT(*) AS c FROM xe WHERE tinh_trang='dang_chay'")->fetch_assoc()['c']??0;
 $xe_bao_duong= $conn->query("SELECT COUNT(*) AS c FROM xe WHERE tinh_trang='bao_duong'")->fetch_assoc()['c']??0;
 
-// Cảnh báo xe sắp hết hạn đăng kiểm / bảo hiểm (30 ngày)
+
 $canh_bao_xe = $conn->query("SELECT bien_so,han_dang_kiem,han_bao_hiem FROM xe WHERE (han_dang_kiem<=DATE_ADD(CURDATE(),INTERVAL 30 DAY) OR han_bao_hiem<=DATE_ADD(CURDATE(),INTERVAL 30 DAY)) AND tinh_trang!='nghi'")->fetch_all(MYSQLI_ASSOC);
 
 $uid = $_SESSION['user_id'];
 $notif_unread = $conn->query("SELECT COUNT(*) AS c FROM thong_bao WHERE nguoi_nhan_id=$uid AND da_doc=0")->fetch_assoc()['c']??0;
 
-// Doanh thu tháng này
+
 $doanh_thu_thang = $conn->query("SELECT COALESCE(SUM(doanh_thu),0) AS t FROM don_hang WHERE MONTH(ngay_tao)=MONTH(CURDATE()) AND YEAR(ngay_tao)=YEAR(CURDATE()) AND trang_thai!='huy'")->fetch_assoc()['t']??0;
 
-// Đơn hàng gần đây
 $recent_don = $conn->query(
     "SELECT dh.ma_don,dh.ten_khach,dh.tinh_lay,dh.tinh_giao,dh.trang_thai,dh.ngay_tao,dh.loai_van_chuyen,
             x.bien_so, tx.ho_ten AS ten_tai_xe
@@ -107,7 +106,6 @@ $active = 'dashboard'; require 'sidebar_dieuphoI.php';
         <div class="big">🛣️</div>
     </div>
 
-    <!-- Cảnh báo xe sắp hết hạn -->
     <?php if (!empty($canh_bao_xe)): ?>
     <div class="warn-box">
         <h4>⚠️ Cảnh báo — <?= count($canh_bao_xe) ?> xe sắp hết hạn đăng kiểm / bảo hiểm</h4>
@@ -121,7 +119,6 @@ $active = 'dashboard'; require 'sidebar_dieuphoI.php';
     </div>
     <?php endif; ?>
 
-    <!-- Cards thống kê -->
     <div class="stat-cards" style="margin-bottom:24px">
         <div class="stat-card" style="border-top-color:#f39c12">
             <div class="sc-icon">🟡</div><div class="sc-label">Chờ duyệt</div>
@@ -150,9 +147,8 @@ $active = 'dashboard'; require 'sidebar_dieuphoI.php';
         </div>
     </div>
 
-    <!-- Panels -->
     <div class="panels">
-        <!-- Đơn hàng gần đây -->
+       
         <div class="panel-card">
             <h3>📋 Đơn Hàng Gần Đây <a href="dieuphoI_don_hang.php">Xem tất cả →</a></h3>
             <?php if($recent_don && $recent_don->num_rows>0):
@@ -177,7 +173,6 @@ $active = 'dashboard'; require 'sidebar_dieuphoI.php';
             </div>
         </div>
 
-        <!-- Phương tiện -->
         <div class="panel-card">
             <h3>🚛 Phương Tiện <a href="dieuphoI_phan_xe.php">Phân xe →</a></h3>
             <?php while($x=$recent_xe->fetch_assoc()): ?>

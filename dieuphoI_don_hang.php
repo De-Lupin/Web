@@ -3,7 +3,6 @@ session_start(); require 'config.php'; require_role(['dieuphoI']);
 
 $msg = '';
 
-// Hủy đơn (trong 24h)
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['huy_don'])) {
     $id  = (int)$_POST['don_id'];
     $ly_do = trim($_POST['ly_do'] ?? 'Điều phối hủy');
@@ -17,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['huy_don'])) {
     }
 }
 
-// Bộ lọc
 $search    = trim($_GET['search']    ?? '');
 $trang_thai= $_GET['trang_thai']     ?? '';
 $tinh      = $_GET['tinh']           ?? '';
@@ -218,7 +216,6 @@ $active = 'don_hang'; require 'sidebar_dieuphoI.php';
 </main>
 </div>
 
-<!-- Modal hủy đơn -->
 <div class="modal-overlay" id="modal_huy">
 <div class="modal-box" style="max-width:420px">
     <div class="modal-header">

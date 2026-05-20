@@ -25,10 +25,10 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
             background:#f5f0fb;
         }
 
-        /* ── LAYOUT ── */
+        
         .wrapper { display:flex; min-height:100vh; }
 
-        /* SIDEBAR */
+        
         .sidebar {
             width:255px; flex-shrink:0;
             background:linear-gradient(180deg,#6c3483 0%,#512e5f 100%);
@@ -85,10 +85,10 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
         }
         .btn-logout:hover { background:rgba(220,53,69,.3); }
 
-        /* MAIN */
+    
         .main { margin-left:255px; flex:1; display:flex; flex-direction:column; }
 
-        /* TOPBAR */
+   
         .topbar {
             background:#fff; padding:15px 32px;
             display:flex; align-items:center; justify-content:space-between;
@@ -109,10 +109,10 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
         .chip-name { font-size:13px; font-weight:700; color:#6c3483; }
         .chip-role { font-size:11px; color:#a569bd; font-weight:600; }
 
-        /* CONTENT */
+  
         .content { padding:30px 32px; flex:1; }
 
-        /* Welcome */
+      
         .welcome {
             background:linear-gradient(135deg,#6c3483,#9b59b6);
             border-radius:14px; padding:24px 28px;
@@ -123,7 +123,7 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
         .welcome p  { font-size:13px; color:rgba(255,255,255,.75); margin-top:5px; }
         .welcome .big { font-size:52px; opacity:.85; }
 
-        /* Cards */
+       
         .cards {
             display:grid;
             grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
@@ -144,8 +144,7 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
         .card .value { font-size:30px; font-weight:800; color:#2c3e50; margin:6px 0 3px; }
         .card .sub   { font-size:12px; color:#95a5a6; }
 
-        /* Panels */
-        .panels { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+          .panels { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
         .panel {
             background:#fff; border-radius:12px; padding:22px;
             box-shadow:0 2px 8px rgba(0,0,0,.06);
@@ -156,7 +155,7 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
             border-bottom:2px solid #f5eef8;
         }
 
-        /* Tracking list */
+        
         .track-item {
             display:flex; align-items:flex-start; gap:14px;
             padding:12px 0; border-bottom:1px solid #f8f9fa;
@@ -181,7 +180,7 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
         .sb-dangxuly { background:#fef9e7; color:#b7770d; }
         .sb-hoan     { background:#eaf4ff; color:#1a5276; }
 
-        /* Công nợ */
+     
         .cono-item {
             display:flex; justify-content:space-between; align-items:center;
             padding:11px 0; border-bottom:1px solid #f8f9fa; font-size:13px;
@@ -192,7 +191,7 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
         .cono-amount { font-weight:800; color:#6c3483; font-size:14px; }
         .cono-due    { font-size:11px; color:#e74c3c; margin-top:2px; text-align:right; }
 
-        /* Thông tin tài khoản */
+        
         .info-box {
             background:#fff; border-radius:12px; padding:22px;
             box-shadow:0 2px 8px rgba(0,0,0,.06); margin-top:20px;
@@ -217,7 +216,7 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
 <body>
 <div class="wrapper">
 
-    <!-- SIDEBAR -->
+    
     <aside class="sidebar">
         <div class="sidebar-head">
             <div class="logo">🚛</div>
@@ -257,9 +256,9 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
         </div>
     </aside>
 
-    <!-- MAIN -->
+   
     <main class="main">
-        <!-- TOPBAR -->
+        
         <div class="topbar">
             <div class="topbar-title">📊 Tổng Quan — Khách Hàng</div>
             <div class="user-chip">
@@ -271,10 +270,8 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
             </div>
         </div>
 
-        <!-- CONTENT -->
         <div class="content">
 
-            <!-- Welcome -->
             <div class="welcome">
                 <div>
                     <h2>Xin chào, <?= htmlspecialchars($full_name) ?>! 👋</h2>
@@ -283,7 +280,6 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
                 <div class="big">👤</div>
             </div>
 
-            <!-- Cards thống kê -->
             <div class="cards">
                 <div class="card c1">
                     <div class="icon">📦</div>
@@ -311,10 +307,8 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
                 </div>
             </div>
 
-            <!-- Panels -->
             <div class="panels">
 
-                <!-- Theo dõi đơn hàng -->
                 <div class="panel">
                     <h3>🗺️ Theo Dõi Hàng Hóa</h3>
 
@@ -358,7 +352,6 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
                     </div>
                 </div>
 
-                <!-- Công nợ -->
                 <div class="panel">
                     <h3>💰 Công Nợ Của Tôi</h3>
 
@@ -401,9 +394,9 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
                     </div>
                 </div>
 
-            </div><!-- /panels -->
+            </div>
 
-            <!-- Thông tin tài khoản -->
+           
             <div class="info-box">
                 <h3>👤 Thông Tin Tài Khoản</h3>
                 <div class="info-row">
@@ -436,7 +429,7 @@ $login_time = isset($_SESSION['login_time']) ? date('d/m/Y H:i', $_SESSION['logi
                 </div>
             </div>
 
-        </div><!-- /content -->
+        </div>
     </main>
 
 </div>

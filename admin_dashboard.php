@@ -4,13 +4,11 @@ session_start(); require 'config.php'; require_role(['admin']);
 $admin_fullname = $_SESSION['full_name'] ?? 'Admin';
 $login_time     = isset($_SESSION['login_time']) ? date('d/m/Y H:i:s',$_SESSION['login_time']) : 'N/A';
 
-// Thống kê người dùng
 $total_users   = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role!='admin' AND is_active=1")->fetch_assoc()['c']??0;
 $total_dp      = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='dieuphoI' AND is_active=1")->fetch_assoc()['c']??0;
 $total_kh      = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khachhang' AND is_active=1")->fetch_assoc()['c']??0;
 $logins_today  = $conn->query("SELECT COUNT(*) AS c FROM audit_log WHERE action='LOGIN' AND DATE(created_at)=CURDATE()")->fetch_assoc()['c']??0;
 
-// Thống kê vận hành (nếu bảng tồn tại)
 $don_thang = $xe_total = $doanh_thu = 0;
 if ($conn->query("SHOW TABLES LIKE 'don_hang'")->num_rows > 0) {
     $don_thang  = $conn->query("SELECT COUNT(*) AS c FROM don_hang WHERE MONTH(ngay_tao)=MONTH(CURDATE()) AND YEAR(ngay_tao)=YEAR(CURDATE()) AND trang_thai!='huy'")->fetch_assoc()['c']??0;
@@ -21,7 +19,6 @@ if ($conn->query("SHOW TABLES LIKE 'xe'")->num_rows > 0) {
     $xe_chay  = $conn->query("SELECT COUNT(*) AS c FROM xe WHERE tinh_trang='dang_chay'")->fetch_assoc()['c']??0;
 }
 
-// Log gần nhất
 $logs = $conn->query("SELECT username,action,detail,ip_address,created_at FROM audit_log ORDER BY created_at DESC LIMIT 8")->fetch_all(MYSQLI_ASSOC);
 
 $active = 'dashboard'; require 'sidebar_admin.php';
@@ -72,7 +69,6 @@ $active = 'dashboard'; require 'sidebar_admin.php';
         <div style="font-size:52px;opacity:.8">👨‍💼</div>
     </div>
 
-    <!-- Stat cards -->
     <div class="stat-cards">
         <div class="stat-card">
             <div class="sc-icon">👥</div><div class="sc-label">Tổng người dùng</div>
@@ -103,7 +99,6 @@ $active = 'dashboard'; require 'sidebar_admin.php';
         <?php endif; ?>
     </div>
 
-    <!-- Truy cập nhanh -->
     <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:24px">
         <h3 style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:16px">⚡ Truy Cập Nhanh</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px">
@@ -116,7 +111,6 @@ $active = 'dashboard'; require 'sidebar_admin.php';
         </div>
     </div>
 
-    <!-- Log gần nhất -->
     <div class="panels">
         <div class="panel-card" style="grid-column:span 2">
             <h3>📋 Nhật Ký Hoạt Động Gần Đây <a href="admin_nhat_ky.php">Xem tất cả →</a></h3>

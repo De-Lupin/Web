@@ -1,7 +1,6 @@
 <?php
 session_start(); require 'config.php'; require_role(['admin']);
 
-// Xóa log cũ (chỉ admin được xóa)
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['xoa_log'])) {
     $ngay = $_POST['xoa_truoc_ngay'] ?? '';
     if ($ngay) {
@@ -12,7 +11,6 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['xoa_log'])) {
 
 $msg = $msg ?? null;
 
-// Bộ lọc
 $search   = trim($_GET['search']   ?? '');
 $action_f = $_GET['action']        ?? '';
 $user_f   = trim($_GET['user']     ?? '');
@@ -32,13 +30,10 @@ $total = $conn->query("SELECT COUNT(*) AS c FROM audit_log $w")->fetch_assoc()['
 $pages = max(1,ceil($total/$per));
 $rows  = $conn->query("SELECT * FROM audit_log $w ORDER BY created_at DESC LIMIT $per OFFSET $offset");
 
-// Thống kê action
 $action_stats = $conn->query("SELECT action, COUNT(*) AS c FROM audit_log GROUP BY action ORDER BY c DESC")->fetch_all(MYSQLI_ASSOC);
 
-// Danh sách action để lọc
 $actions = $conn->query("SELECT DISTINCT action FROM audit_log ORDER BY action")->fetch_all(MYSQLI_ASSOC);
 
-// Thống kê 7 ngày gần đây
 $week_stats = $conn->query("SELECT DATE(created_at) AS ngay, COUNT(*) AS c FROM audit_log WHERE created_at >= DATE_SUB(CURDATE(),INTERVAL 7 DAY) GROUP BY DATE(created_at) ORDER BY ngay ASC")->fetch_all(MYSQLI_ASSOC);
 
 $action_color = [
@@ -89,9 +84,7 @@ $active = 'nhat_ky'; require 'sidebar_admin.php';
 
     <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start">
 
-        <!-- Cột chính -->
         <div>
-            <!-- Bộ lọc -->
             <div style="background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:18px">
                 <form method="GET" class="filter-grid">
                     <div class="search-box" style="flex:1;min-width:200px">
@@ -111,7 +104,6 @@ $active = 'nhat_ky'; require 'sidebar_admin.php';
                 </form>
             </div>
 
-            <!-- Bảng log -->
             <div class="table-wrap">
                 <div class="table-scroll">
                 <table>
@@ -160,7 +152,6 @@ $active = 'nhat_ky'; require 'sidebar_admin.php';
                 </table>
                 </div>
 
-                <!-- Phân trang -->
                 <?php if($pages>1): ?>
                 <div class="pagination">
                     <?php
@@ -172,7 +163,6 @@ $active = 'nhat_ky'; require 'sidebar_admin.php';
                 <?php endif; ?>
             </div>
 
-            <!-- Vùng nguy hiểm: Xóa log -->
             <div class="danger-zone">
                 <h3>⚠️ Xóa Nhật Ký Cũ</h3>
                 <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Xóa toàn bộ log trước một ngày nhất định. Thao tác này không thể hoàn tác!</p>
@@ -187,10 +177,8 @@ $active = 'nhat_ky'; require 'sidebar_admin.php';
             </div>
         </div>
 
-        <!-- Cột phải: Thống kê -->
         <div style="display:flex;flex-direction:column;gap:16px">
 
-            <!-- Biểu đồ 7 ngày -->
             <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
                 <h3 style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:14px">📈 Hoạt động 7 ngày</h3>
                 <?php if(!empty($week_stats)): ?>
@@ -200,7 +188,6 @@ $active = 'nhat_ky'; require 'sidebar_admin.php';
                 <?php endif; ?>
             </div>
 
-            <!-- Thống kê theo action -->
             <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
                 <h3 style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:14px">📊 Thống kê hành động</h3>
                 <?php
@@ -225,7 +212,6 @@ $active = 'nhat_ky'; require 'sidebar_admin.php';
                 <?php endif; ?>
             </div>
 
-            <!-- Thông tin hệ thống -->
             <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
                 <h3 style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:14px">⚙️ Thông Tin Hệ Thống</h3>
                 <?php

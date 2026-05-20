@@ -2,7 +2,7 @@
 session_start(); require 'config.php'; require_role(['dieuphoI']);
 $msg = '';
 
-// Cập nhật chuyến xe (km kết thúc, nhiên liệu...)
+
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['cap_nhat_chuyen'])) {
     $id       = (int)$_POST['cx_id'];
     $km_kt    = (int)$_POST['km_ket_thuc'];
@@ -14,17 +14,17 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['cap_nhat_chuyen'])) {
 
     $conn->query("UPDATE chuyen_xe SET km_ket_thuc=$km_kt, nhien_lieu=$nhien_lieu, chi_phi_duong=$chi_phi, trang_thai='$trang_thai', ghi_chu_cx='".mysqli_real_escape_string($conn,$ghi_chu)."', thoi_gian_den=$thoi_gian_den WHERE id=$id");
 
-    // Nếu hoàn thành → cập nhật km xe
+
     if ($trang_thai==='hoan_thanh') {
         $cx = $conn->query("SELECT xe_id,km_thuc_te FROM chuyen_xe WHERE id=$id")->fetch_assoc();
         if ($cx) $conn->query("UPDATE xe SET km_hien_tai=km_hien_tai+{$cx['km_thuc_te']} WHERE id={$cx['xe_id']}");
-        // Cập nhật đơn hàng → đã giao
+      
         $conn->query("UPDATE don_hang SET trang_thai='da_giao',ngay_giao_thuc_te=NOW() WHERE id=(SELECT don_hang_id FROM chuyen_xe WHERE id=$id)");
     }
     $msg = ['type'=>'success','text'=>'Đã cập nhật chuyến xe!'];
 }
 
-// Tạo chuyến xe từ đơn hàng
+
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['tao_chuyen'])) {
     $don_id   = (int)$_POST['don_id'];
     $km_bd    = (int)$_POST['km_bat_dau'];
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['tao_chuyen'])) {
     }
 }
 
-// Lọc
+
 $filter = $_GET['filter'] ?? 'all';
 $where  = "WHERE 1=1";
 if ($filter==='dang_di')    $where .= " AND cx.trang_thai='dang_di'";
@@ -64,7 +64,7 @@ $rows = $conn->query(
      $where ORDER BY cx.created_at DESC LIMIT 50"
 );
 
-// Đơn đã phân xe, chưa có chuyến
+
 $don_cho_xuat = $conn->query(
     "SELECT dh.id,dh.ma_don,dh.ten_khach,dh.tinh_lay,dh.tinh_giao,x.bien_so,tx.ho_ten
      FROM don_hang dh
@@ -75,7 +75,7 @@ $don_cho_xuat = $conn->query(
      ORDER BY dh.ngay_lay_hang ASC"
 );
 
-// Thống kê
+
 $dang_di   = $conn->query("SELECT COUNT(*) AS c FROM chuyen_xe WHERE trang_thai='dang_di'")->fetch_assoc()['c']??0;
 $hom_nay   = $conn->query("SELECT COUNT(*) AS c FROM chuyen_xe WHERE DATE(created_at)=CURDATE()")->fetch_assoc()['c']??0;
 $km_thang  = $conn->query("SELECT COALESCE(SUM(km_thuc_te),0) AS t FROM chuyen_xe WHERE MONTH(created_at)=MONTH(CURDATE()) AND trang_thai='hoan_thanh'")->fetch_assoc()['t']??0;
@@ -102,7 +102,7 @@ $active = 'chuyen_xe'; require 'sidebar_dieuphoI.php';
 <div class="content">
     <?php if(!empty($msg)): ?><div class="alert alert-<?=$msg['type']?>"><?=$msg['text']?></div><?php endif; ?>
 
-    <!-- Thống kê -->
+  
     <div class="stat-cards" style="margin-bottom:24px">
         <div class="stat-card" style="border-top-color:#2980b9">
             <div class="sc-icon">🚛</div><div class="sc-label">Đang trên đường</div>
@@ -122,7 +122,6 @@ $active = 'chuyen_xe'; require 'sidebar_dieuphoI.php';
         </div>
     </div>
 
-    <!-- Đơn chờ xuất phát -->
     <?php if($don_cho_xuat && $don_cho_xuat->num_rows>0): ?>
     <div class="form-card" style="margin-bottom:20px;border-left:4px solid #f39c12">
         <h3 style="font-size:14px;font-weight:700;color:#b7770d;margin-bottom:14px">
@@ -217,7 +216,6 @@ $active = 'chuyen_xe'; require 'sidebar_dieuphoI.php';
 </main>
 </div>
 
-<!-- Modal tạo chuyến (xuất phát) -->
 <div class="modal-overlay" id="modal_tao">
 <div class="modal-box" style="max-width:440px">
     <div class="modal-header">
@@ -247,7 +245,6 @@ $active = 'chuyen_xe'; require 'sidebar_dieuphoI.php';
 </div>
 </div>
 
-<!-- Modal cập nhật chuyến -->
 <div class="modal-overlay" id="modal_capnhat">
 <div class="modal-box" style="max-width:480px">
     <div class="modal-header">
