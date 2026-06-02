@@ -6,7 +6,7 @@ if (isset($_SESSION['user_id'])) {
     $r = $_SESSION['role'] ?? '';
     if ($r === 'admin')     { header("Location: admin_dashboard.php"); exit(); }
     if ($r === 'dieuphoI')  { header("Location: dieuphoI_dashboard.php"); exit(); }
-    header("Location: customer_dashboard.php"); exit();
+    header("Location: main_khach_hang.php"); exit();
 }
 
 
@@ -73,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($user['role'] === 'dieuphoI') {
                     header("Location: dieuphoI_dashboard.php");
                 } else {
-                    header("Location: customer_dashboard.php");
+                    header("Location: main_khach_hang.php");
                 }
                 exit();
             }
