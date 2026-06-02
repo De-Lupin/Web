@@ -29,15 +29,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['doi_mat_khau'])) {
     $pw_xn  = $_POST['xac_nhan_mkhau'] ?? '';
 
     // Kiểm tra mật khẩu cũ (plain text theo hệ thống hiện tại)
-    if ($pw_cu !== $u['password']) {
+    if (!verify_password($pw_cu, $u['password'])) {
         $msg = ['type' => 'danger', 'text' => '❌ Mật khẩu hiện tại không đúng!'];
     } elseif (strlen($pw_moi) < 6) {
         $msg = ['type' => 'danger', 'text' => '❌ Mật khẩu mới phải ít nhất 6 ký tự!'];
     } elseif ($pw_moi !== $pw_xn) {
         $msg = ['type' => 'danger', 'text' => '❌ Xác nhận mật khẩu không khớp!'];
     } else {
-        $pw_esc = mysqli_real_escape_string($conn, $pw_moi);
-        $conn->query("UPDATE users SET password='$pw_esc' WHERE id=$uid");
+        $pw_hash = password_hash($pw_moi, PASSWORD_DEFAULT);
+        $stmt_pw = $conn->prepare("UPDATE users SET password=? WHERE id=?");
+        $stmt_pw->bind_param('si', $pw_hash, $uid);
+        $stmt_pw->execute(); $stmt_pw->close();
         $u = $conn->query("SELECT * FROM users WHERE id=$uid LIMIT 1")->fetch_assoc();
         $msg = ['type' => 'success', 'text' => '✅ Đã đổi mật khẩu thành công!'];
     }

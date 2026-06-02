@@ -11,8 +11,9 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['them_user'])) {
     $phone= trim($_POST['phone']     ?? '');
     $role = $_POST['role']           ?? 'khachhang';
     if ($un && $pw && $email && $fn) {
+        $pw_hash = password_hash($pw, PASSWORD_DEFAULT);
         $stmt = $conn->prepare("INSERT INTO users (username,password,email,full_name,phone,role) VALUES(?,?,?,?,?,?)");
-        $stmt->bind_param("ssssss",$un,$pw,$email,$fn,$phone,$role);
+        $stmt->bind_param("ssssss",$un,$pw_hash,$email,$fn,$phone,db_role($role));
         if ($stmt->execute()) $msg=['type'=>'success','text'=>"Đã tạo tài khoản <strong>$un</strong> thành công!"];
         else $msg=['type'=>'danger','text'=>'Lỗi: '.($stmt->error=='Duplicate entry'?'Username hoặc email đã tồn tại!':$stmt->error)];
         $stmt->close();
@@ -29,8 +30,11 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['sua_user'])) {
     $act  = (int)($_POST['is_active']??1);
     $pw   = trim($_POST['new_password']??'');
     if ($pw) {
-        $conn->query("UPDATE users SET full_name='".mysqli_real_escape_string($conn,$fn)."',email='".mysqli_real_escape_string($conn,$email)."',phone='".mysqli_real_escape_string($conn,$phone)."',role='$role',is_active=$act,password='" . mysqli_real_escape_string($conn,$pw) . "' WHERE id=$id");
+        $pw_hash_new = password_hash($pw, PASSWORD_DEFAULT);
+        $role = db_role($role);
+        $conn->query("UPDATE users SET full_name='".mysqli_real_escape_string($conn,$fn)."',email='".mysqli_real_escape_string($conn,$email)."',phone='".mysqli_real_escape_string($conn,$phone)."',role='$role',is_active=$act,password='" . mysqli_real_escape_string($conn,$pw_hash_new) . "' WHERE id=$id");
     } else {
+        $role = db_role($role); // convert sang DB value
         $conn->query("UPDATE users SET full_name='".mysqli_real_escape_string($conn,$fn)."',email='".mysqli_real_escape_string($conn,$email)."',phone='".mysqli_real_escape_string($conn,$phone)."',role='$role',is_active=$act WHERE id=$id");
     }
     $msg=['type'=>'success','text'=>'Đã cập nhật tài khoản thành công!'];
@@ -105,9 +109,9 @@ $active = 'nguoi_dung'; require 'sidebar_admin.php';
         <div class="stat-card"><div class="sc-icon">👥</div><div class="sc-label">Tổng</div>
             <div class="sc-value"><?=$conn->query("SELECT COUNT(*) AS c FROM users WHERE role!='admin'")->fetch_assoc()['c']?></div><div class="sc-sub">Tài khoản</div></div>
         <div class="stat-card" style="border-top-color:#27ae60"><div class="sc-icon">📋</div><div class="sc-label">Điều Phối</div>
-            <div class="sc-value" style="color:#27ae60"><?=$conn->query("SELECT COUNT(*) AS c FROM users WHERE role='dieuphoI'")->fetch_assoc()['c']?></div><div class="sc-sub">Tài khoản</div></div>
+            <div class="sc-value" style="color:#27ae60"><?=$conn->query("SELECT COUNT(*) AS c FROM users WHERE role='điều phối'")->fetch_assoc()['c']?></div><div class="sc-sub">Tài khoản</div></div>
         <div class="stat-card" style="border-top-color:#2980b9"><div class="sc-icon">🏢</div><div class="sc-label">Khách Hàng</div>
-            <div class="sc-value" style="color:#2980b9"><?=$conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khachhang'")->fetch_assoc()['c']?></div><div class="sc-sub">Tài khoản</div></div>
+            <div class="sc-value" style="color:#2980b9"><?=$conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khách hàng'")->fetch_assoc()['c']?></div><div class="sc-sub">Tài khoản</div></div>
         <div class="stat-card" style="border-top-color:#e74c3c"><div class="sc-icon">🔒</div><div class="sc-label">Đã Khóa</div>
             <div class="sc-value" style="color:#e74c3c"><?=$conn->query("SELECT COUNT(*) AS c FROM users WHERE is_active=0 AND role!='admin'")->fetch_assoc()['c']?></div><div class="sc-sub">Tài khoản</div></div>
     </div>

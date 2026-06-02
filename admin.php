@@ -110,7 +110,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['verify_code']) && !is
             $error_message = "Email không khớp với tài khoản!";
             write_audit_log($conn, $admin['id'], $admin_username, 'ADMIN_LOGIN_FAILED', 'Sai email');
 
-        } elseif ($admin_password !== $admin['password']) {
+        } elseif (!verify_password($admin_password, $admin['password'])) {
             $error_message = "Mật khẩu không đúng!";
             write_audit_log($conn, $admin['id'], $admin_username, 'ADMIN_LOGIN_FAILED', 'Sai mật khẩu');
 

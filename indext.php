@@ -2,7 +2,6 @@
 // ============================================================
 // indext.php — Đăng nhập & Đăng ký
 // Dành cho: Khách hàng (đăng ký mới) + Điều Phối Viên (đăng nhập)
-// Lưu mật khẩu dạng thường (plain text) theo yêu cầu
 // ============================================================
 session_start();
 require 'config.php';
@@ -17,7 +16,7 @@ if (isset($_SESSION['user_id'])) {
 
 $error   = '';
 $success = '';
-$tab     = $_GET['tab'] ?? 'login'; // login | register
+$tab     = $_GET['tab'] ?? 'login';
 
 // ============================================================
 // XỬ LÝ ĐĂNG NHẬP
@@ -30,35 +29,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_login'])) {
     if (!$username || !$password) {
         $error = 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!';
     } else {
-        $un  = mysqli_real_escape_string($conn, $username);
-        $pw  = mysqli_real_escape_string($conn, $password);
+        // Dùng prepared statement để tránh SQL injection
+        $stmt = $conn->prepare("SELECT * FROM users WHERE username = ? LIMIT 1");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $user = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
 
-        // Tìm tài khoản — so sánh mật khẩu plain text
-        $user = $conn->query(
-            "SELECT * FROM users WHERE username='$un' AND password='$pw' LIMIT 1"
-        )->fetch_assoc();
-
-        if (!$user) {
+        if (!$user || !verify_password($password, $user['password'])) {
+            // Không tìm thấy user HOẶC sai mật khẩu → cùng 1 thông báo (bảo mật)
             $error = 'Tên đăng nhập hoặc mật khẩu không đúng!';
             write_audit_log($conn, null, $username, 'LOGIN_FAILED', 'Sai thông tin đăng nhập');
+
         } elseif (!$user['is_active']) {
             $error = 'Tài khoản đã bị khóa. Liên hệ quản trị viên!';
-        } elseif ($user['role'] === 'admin') {
+
+        } elseif (normalize_role($user['role']) === 'admin') {
             $error = 'Tài khoản Admin vui lòng đăng nhập tại trang Admin.';
+
         } else {
-            // Đăng nhập thành công
+            // ✅ Đăng nhập thành công
+            $role_code = normalize_role($user['role']); // 'dieuphoI' hoặc 'khachhang'
+
             session_regenerate_id(true);
-            $_SESSION['user_id']   = $user['id'];
-            $_SESSION['username']  = $user['username'];
-            $_SESSION['full_name'] = $user['full_name'];
-            $_SESSION['email']     = $user['email'];
-            $_SESSION['role']      = $user['role'];
-            $_SESSION['login_time']= time();
+            $_SESSION['user_id']    = $user['id'];
+            $_SESSION['username']   = $user['username'];
+            $_SESSION['full_name']  = $user['full_name'];
+            $_SESSION['email']      = $user['email'];
+            $_SESSION['phone']      = $user['phone'] ?? '';
+            $_SESSION['role']       = $role_code;      // Lưu role đã normalize
+            $_SESSION['login_time'] = time();
 
             $conn->query("UPDATE users SET last_login=NOW() WHERE id={$user['id']}");
             write_audit_log($conn, $user['id'], $user['username'], 'LOGIN', 'Đăng nhập thành công');
 
-            $dest = $user['role'] === 'dieuphoI'
+            $dest = $role_code === 'dieuphoI'
                   ? 'dieuphoI_dashboard.php'
                   : 'customer_dashboard.php';
             header("Location: $dest"); exit();
@@ -77,7 +82,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_register'])) {
     $phone     = trim($_POST['reg_phone']     ?? '');
     $tab = 'register';
 
-    // Validate
     if (!$username || !$password || !$full_name) {
         $error = 'Vui lòng điền đầy đủ: Tên đăng nhập, Mật khẩu và Họ tên!';
     } elseif (!$email && !$phone) {
@@ -87,33 +91,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_register'])) {
     } elseif (strlen($password) < 4) {
         $error = 'Mật khẩu phải có ít nhất 4 ký tự!';
     } else {
-        $un_esc = mysqli_real_escape_string($conn, $username);
+        // Kiểm tra username đã tồn tại chưa
+        $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? LIMIT 1");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $check = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
 
-        // Kiểm tra tên đăng nhập đã tồn tại chưa
-        $check = $conn->query("SELECT id FROM users WHERE username='$un_esc' LIMIT 1")->fetch_assoc();
         if ($check) {
             $error = 'Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác!';
         } else {
-            $pw_esc  = mysqli_real_escape_string($conn, $password);
-            $fn_esc  = mysqli_real_escape_string($conn, $full_name);
-            $em_esc  = $email ? mysqli_real_escape_string($conn, $email) : '';
-            $ph_esc  = $phone ? mysqli_real_escape_string($conn, $phone) : '';
+            // Hash mật khẩu bằng bcrypt trước khi lưu
+            $pw_hash  = password_hash($password, PASSWORD_DEFAULT);
+            $em_final = $email ?: ($username . '@khachhang.local');
+            // Lưu role đúng với ENUM trong DB: 'khách hàng'
+            $db_role_val = db_role('khachhang'); // = 'khách hàng'
 
-            // Email tự sinh nếu không nhập (cần NOT NULL trong DB)
-            $em_final = $em_esc ?: ($un_esc . '@khachhang.local');
-
-            $conn->query(
+            $stmt = $conn->prepare(
                 "INSERT INTO users (username, password, email, full_name, phone, role, is_active)
-                 VALUES ('$un_esc', '$pw_esc', '$em_final', '$fn_esc', '$ph_esc', 'khachhang', 1)"
+                 VALUES (?, ?, ?, ?, ?, ?, 1)"
             );
+            $stmt->bind_param("ssssss", $username, $pw_hash, $em_final, $full_name, $phone, $db_role_val);
 
-            if ($conn->affected_rows > 0) {
+            if ($stmt->execute()) {
+                $new_id  = $conn->insert_id;
                 $success = 'Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.';
-                $tab = 'login'; // Chuyển sang tab đăng nhập
-                write_audit_log($conn, $conn->insert_id, $username, 'REGISTER', 'Tạo tài khoản mới');
+                $tab     = 'login';
+                write_audit_log($conn, $new_id, $username, 'REGISTER', 'Tạo tài khoản mới');
             } else {
-                $error = 'Đăng ký thất bại: ' . $conn->error;
+                $error = 'Đăng ký thất bại: ' . $stmt->error;
             }
+            $stmt->close();
         }
     }
 }

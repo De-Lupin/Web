@@ -56,14 +56,17 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['doi_mat_khau'])) {
     $r = $conn->query("SELECT password FROM users WHERE id=$admin_id");
     $admin = $r->fetch_assoc();
 
-    if ($pw_cu !== $admin['password']) {
+    if (!verify_password($pw_cu, $admin['password'])) {
         $msg = ['type'=>'danger','text'=>'Mật khẩu hiện tại không đúng!'];
     } elseif (strlen($pw_moi) < 8) {
         $msg = ['type'=>'danger','text'=>'Mật khẩu mới phải ít nhất 8 ký tự!'];
     } elseif ($pw_moi !== $pw_xn) {
         $msg = ['type'=>'danger','text'=>'Xác nhận mật khẩu không khớp!'];
     } else {
-        $conn->query("UPDATE users SET password='" . mysqli_real_escape_string($conn, $pw_moi) . "' WHERE id=$admin_id");
+        $pw_hash = password_hash($pw_moi, PASSWORD_DEFAULT);
+        $stmt_pw = $conn->prepare("UPDATE users SET password=? WHERE id=?");
+        $stmt_pw->bind_param('si', $pw_hash, $admin_id);
+        $stmt_pw->execute(); $stmt_pw->close();
         write_audit_log($conn, $admin_id, $_SESSION['username'], 'CHANGE_PASSWORD', 'Admin đổi mật khẩu');
         $msg = ['type'=>'success','text'=>'Đã đổi mật khẩu thành công!'];
     }
