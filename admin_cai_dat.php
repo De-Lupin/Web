@@ -2,6 +2,7 @@
 session_start(); require 'config.php'; require_role(['admin']);
 $msg = null;
 
+// Tạo bảng cài đặt nếu chưa có
 $conn->query("CREATE TABLE IF NOT EXISTS system_settings (
     id       INT AUTO_INCREMENT PRIMARY KEY,
     `key`    VARCHAR(100) NOT NULL UNIQUE,
@@ -11,6 +12,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS system_settings (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+// Insert default settings nếu chưa có
 $defaults = [
     ['ten_cong_ty',        'Công Ty TNHH Vận Tải Đường Bộ',   'general', 'Tên công ty'],
     ['dia_chi_cong_ty',    '123 Đường ABC, Q.1, TP.HCM',       'general', 'Địa chỉ'],
@@ -32,6 +34,7 @@ foreach($defaults as $d) {
     $conn->query("INSERT IGNORE INTO system_settings (`key`,`value`,`group`,`label`) VALUES('$d[0]','$d[1]','$d[2]','$d[3]')");
 }
 
+// Lưu cài đặt
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['luu_cai_dat'])) {
     $group_save = $_POST['group_save'] ?? 'general';
     $settings   = $_POST['settings'] ?? [];
@@ -43,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['luu_cai_dat'])) {
     $msg = ['type'=>'success','text'=>'Đã lưu cài đặt thành công!'];
 }
 
+// Đổi mật khẩu admin
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['doi_mat_khau'])) {
     $pw_cu   = $_POST['mat_khau_cu']   ?? '';
     $pw_moi  = $_POST['mat_khau_moi']  ?? '';
@@ -52,20 +56,20 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['doi_mat_khau'])) {
     $r = $conn->query("SELECT password FROM users WHERE id=$admin_id");
     $admin = $r->fetch_assoc();
 
-    if (!password_verify($pw_cu, $admin['password'])) {
+    if ($pw_cu !== $admin['password']) {
         $msg = ['type'=>'danger','text'=>'Mật khẩu hiện tại không đúng!'];
     } elseif (strlen($pw_moi) < 8) {
         $msg = ['type'=>'danger','text'=>'Mật khẩu mới phải ít nhất 8 ký tự!'];
     } elseif ($pw_moi !== $pw_xn) {
         $msg = ['type'=>'danger','text'=>'Xác nhận mật khẩu không khớp!'];
     } else {
-        $hash = password_hash($pw_moi, PASSWORD_DEFAULT);
-        $conn->query("UPDATE users SET password='$hash' WHERE id=$admin_id");
+        $conn->query("UPDATE users SET password='" . mysqli_real_escape_string($conn, $pw_moi) . "' WHERE id=$admin_id");
         write_audit_log($conn, $admin_id, $_SESSION['username'], 'CHANGE_PASSWORD', 'Admin đổi mật khẩu');
         $msg = ['type'=>'success','text'=>'Đã đổi mật khẩu thành công!'];
     }
 }
 
+// Lấy tất cả settings theo group
 $all_settings = [];
 $r = $conn->query("SELECT * FROM system_settings ORDER BY `group`,id");
 while($row=$r->fetch_assoc()) $all_settings[$row['group']][$row['key']] = $row;
@@ -120,6 +124,7 @@ $active = 'cai_dat'; require 'sidebar_admin.php';
 <div class="content">
     <?php if(!empty($msg)): ?><div class="alert alert-<?=$msg['type']?>"><?=$msg['text']?></div><?php endif; ?>
 
+    <!-- Tab navigation -->
     <div class="tab-nav">
         <?php foreach($tab_labels as $k=>$v): ?>
         <a href="?tab=<?=$k?>" class="tab-btn <?=$tab===$k?'active':''?>"><?=$v['icon']?> <?=$v['label']?></a>
@@ -127,6 +132,7 @@ $active = 'cai_dat'; require 'sidebar_admin.php';
     </div>
 
     <?php if ($tab === 'password'): ?>
+    <!-- ── Tab đổi mật khẩu ── -->
     <div class="setting-section" style="max-width:500px">
         <h3>🔑 Đổi Mật Khẩu Admin</h3>
         <form method="POST">
@@ -150,13 +156,8 @@ $active = 'cai_dat'; require 'sidebar_admin.php';
             </div>
         </form>
     </div>
-
-    
-            </div>
-        </div>
-    </div>
-
     <?php else: ?>
+    <!-- ── Các tab cài đặt thông thường ── -->
     <div class="setting-section">
         <h3><?= $tab_labels[$tab]['icon']??'⚙️' ?> <?= $tab_labels[$tab]['label']??'Cài đặt' ?></h3>
         <form method="POST">
@@ -205,6 +206,7 @@ $active = 'cai_dat'; require 'sidebar_admin.php';
 </div>
 
 <script>
+// Kiểm tra mật khẩu khớp
 const pwMoi = document.getElementById('pw_moi');
 const pwXn  = document.getElementById('pw_xn');
 const pwMsg = document.getElementById('pw_match_msg');

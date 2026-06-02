@@ -1,7 +1,7 @@
 /* ============================================================
-   admin_layout.css
-   CSS dùng chung cho toàn bộ module Admin
-   Giao diện: trắng sạch, chuyên nghiệp, dễ đọc
+   customer_layout.css
+   CSS dùng chung cho toàn bộ module Khách Hàng
+   Màu chủ đạo: Tím (purple) — phân biệt với Admin (indigo) và Điều Phối (blue)
    ============================================================ */
 
 /* ── 1. RESET & BIẾN CSS ── */
@@ -12,10 +12,10 @@
 }
 
 :root {
-    /* Màu chủ đạo - tím xanh, uy quyền */
-    --primary:       #4f46e5;       /* Màu nhấn chính (indigo) */
-    --primary-dark:  #4338ca;       /* Đậm hơn khi hover */
-    --primary-light: #eef2ff;       /* Rất nhạt, dùng cho nền phụ */
+    /* Màu chủ đạo - tím, thân thiện */
+    --primary:       #7c3aed;       /* Tím chính (violet) */
+    --primary-dark:  #6d28d9;       /* Tím đậm hơn khi hover */
+    --primary-light: #ede9fe;       /* Tím rất nhạt */
 
     /* Màu trạng thái */
     --danger:        #ef4444;
@@ -23,11 +23,11 @@
     --success:       #10b981;
 
     /* Màu text */
-    --text:          #1e293b;       /* Chữ chính */
-    --muted:         #64748b;       /* Chữ phụ */
+    --text:          #1e293b;
+    --muted:         #64748b;
 
     /* Màu nền & viền */
-    --bg:            #f8fafc;       /* Nền trang */
+    --bg:            #f8fafc;
     --white:         #ffffff;
     --border:        #e2e8f0;
     --shadow:        0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
@@ -35,14 +35,13 @@
     /* Kích thước sidebar */
     --sidebar-w: 240px;
 
-    /* Sidebar màu trắng */
+    /* Sidebar */
     --sidebar-bg:          #ffffff;
     --sidebar-text:        #475569;
-    --sidebar-active-bg:   #eef2ff;
-    --sidebar-active-text: #4f46e5;
+    --sidebar-active-bg:   #ede9fe;
+    --sidebar-active-text: #7c3aed;
 }
 
-/* Font chữ */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: var(--bg);
@@ -51,7 +50,7 @@ body {
     line-height: 1.5;
 }
 
-/* ── 2. BỐ CỤC CHÍNH (LAYOUT) ── */
+/* ── 2. BỐ CỤC CHÍNH ── */
 .app {
     display: flex;
     min-height: 100vh;
@@ -71,7 +70,6 @@ body {
     z-index: 100;
 }
 
-/* Logo / tiêu đề phía trên sidebar */
 .sidebar-logo {
     padding: 24px 20px 20px;
     border-bottom: 1px solid var(--border);
@@ -93,7 +91,20 @@ body {
     margin-top: 3px;
 }
 
-/* Khu vực menu */
+/* Role pill */
+.role-pill {
+    margin: 12px 16px 0;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .nav-section {
     padding: 12px 0;
     flex: 1;
@@ -107,7 +118,6 @@ body {
     padding: 10px 20px 5px;
 }
 
-/* Mỗi mục menu */
 .nav-item {
     display: flex;
     align-items: center;
@@ -139,7 +149,19 @@ body {
     flex-shrink: 0;
 }
 
-/* Phần dưới sidebar */
+/* Badge số thông báo */
+.badge-count {
+    margin-left: auto;
+    background: var(--danger);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+}
+
 .sidebar-foot {
     padding: 14px 16px;
     border-top: 1px solid var(--border);
@@ -171,6 +193,7 @@ body {
 .su-role {
     font-size: 11px;
     color: var(--muted);
+    margin-top: 1px;
 }
 .btn-logout {
     display: flex;
@@ -190,9 +213,7 @@ body {
     text-decoration: none;
     transition: .2s;
 }
-.btn-logout:hover {
-    background: #fee2e2;
-}
+.btn-logout:hover { background: #fee2e2; }
 
 /* ── 4. NỘI DUNG CHÍNH ── */
 .main {
@@ -203,7 +224,7 @@ body {
     min-width: 0;
 }
 
-/* ── 5. THANH TOPBAR ── */
+/* ── 5. TOPBAR ── */
 .topbar {
     background: var(--white);
     padding: 14px 28px;
@@ -231,7 +252,6 @@ body {
     text-decoration: none;
 }
 
-/* Chip user trên topbar */
 .user-chip {
     display: flex;
     align-items: center;
@@ -263,7 +283,7 @@ body {
     color: var(--muted);
 }
 
-/* ── 6. KHU VỰC NỘI DUNG ── */
+/* ── 6. NỘI DUNG ── */
 .content {
     padding: 24px 28px;
     flex: 1;
@@ -282,7 +302,7 @@ body {
     font-weight: 700;
 }
 
-/* ── 7. THẺ THỐNG KÊ ── */
+/* ── 7. STAT CARDS ── */
 .stat-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -315,15 +335,6 @@ body {
     border: 1px solid var(--border);
     overflow: hidden;
 }
-.table-toolbar {
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    border-bottom: 1px solid var(--border);
-}
 .table-scroll { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 thead th {
@@ -343,10 +354,10 @@ tbody td {
     border-bottom: 1px solid #f1f5f9;
     vertical-align: middle;
 }
-tbody tr:hover td { background: #fafcff; }
+tbody tr:hover td { background: #faf5ff; }
 tbody tr:last-child td { border-bottom: none; }
 
-/* ── 9. BADGE TRẠNG THÁI ── */
+/* ── 9. BADGE ── */
 .badge {
     display: inline-block;
     padding: 3px 10px;
@@ -356,34 +367,15 @@ tbody tr:last-child td { border-bottom: none; }
     white-space: nowrap;
 }
 
-/* Badge người dùng */
-.b-admin     { background: #ede9fe; color: #5b21b6; }
-.b-dieuphoI  { background: #d1fae5; color: #065f46; }
-.b-khachhang { background: #dbeafe; color: #1e40af; }
-.b-active    { background: #d1fae5; color: #065f46; }
-.b-inactive  { background: #fee2e2; color: #991b1b; }
-
-/* Badge nhật ký */
-.b-LOGIN           { background: #d1fae5; color: #065f46; }
-.b-LOGOUT          { background: #f1f5f9; color: #64748b; }
-.b-LOGIN_FAILED     { background: #fee2e2; color: #991b1b; }
-.b-ADMIN_LOGIN      { background: #ede9fe; color: #5b21b6; }
-.b-ADMIN_LOGIN_FAILED { background: #fee2e2; color: #991b1b; }
-
-/* Badge xe */
-.b-san_sang  { background: #d1fae5; color: #065f46; }
-.b-dang_chay { background: #dbeafe; color: #1e40af; }
-.b-bao_duong { background: #fef9c3; color: #854d0e; }
-.b-hong      { background: #fee2e2; color: #991b1b; }
-
 /* Badge đơn hàng */
-.b-cho_duyet     { background: #fef9c3; color: #854d0e; }
-.b-dang_xu_ly    { background: #dbeafe; color: #1e40af; }
-.b-dang_lay_rong { background: #f3e8ff; color: #7e22ce; }
-.b-dang_giao     { background: #d1fae5; color: #065f46; }
-.b-hoan_thanh    { background: #d1fae5; color: #065f46; }
-.b-da_thanh_toan { background: #dbeafe; color: #1e40af; }
-.b-huy           { background: #fee2e2; color: #991b1b; }
+.b-cho_duyet        { background: #fef9c3; color: #854d0e; }
+.b-dang_xu_ly       { background: #dbeafe; color: #1e40af; }
+.b-dang_lay_hang    { background: #f3e8ff; color: #7e22ce; }
+.b-dang_van_chuyen  { background: #dcfce7; color: #166534; }
+.b-da_giao          { background: #d1fae5; color: #065f46; }
+.b-hoan_thanh       { background: #d1fae5; color: #065f46; }
+.b-da_thanh_toan    { background: #dbeafe; color: #1e40af; }
+.b-huy              { background: #fee2e2; color: #991b1b; }
 
 /* ── 10. NÚT BẤM ── */
 .btn {
@@ -420,32 +412,7 @@ tbody tr:last-child td { border-bottom: none; }
 }
 .btn-sm { padding: 5px 12px; font-size: 12px; }
 
-/* ── 11. Ô TÌM KIẾM ── */
-.search-box {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--bg);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 14px;
-    flex: 1;
-    max-width: 320px;
-}
-.search-box input {
-    border: none;
-    background: transparent;
-    outline: none;
-    font-size: 13px;
-    width: 100%;
-    font-family: inherit;
-}
-.search-box:focus-within {
-    border-color: var(--primary);
-    background: var(--white);
-}
-
-/* ── 12. FORM ── */
+/* ── 11. FORM ── */
 .form-card {
     background: var(--white);
     border-radius: 10px;
@@ -458,11 +425,8 @@ tbody tr:last-child td { border-bottom: none; }
     grid-template-columns: 1fr 1fr;
     gap: 16px;
 }
-.form-grid.col1 { grid-template-columns: 1fr; }
-.form-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field.span2 { grid-column: span 2; }
-.field.span3 { grid-column: span 3; }
 .field label { font-size: 13px; font-weight: 600; color: var(--text); }
 .field input,
 .field select,
@@ -481,7 +445,7 @@ tbody tr:last-child td { border-bottom: none; }
 .field select:focus,
 .field textarea:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+    box-shadow: 0 0 0 3px rgba(124,58,237,.1);
 }
 .field textarea { resize: vertical; min-height: 80px; }
 .form-actions {
@@ -491,22 +455,19 @@ tbody tr:last-child td { border-bottom: none; }
     justify-content: flex-end;
 }
 
-/* ── 13. THÔNG BÁO ── */
+/* ── 12. ALERT ── */
 .alert {
     padding: 12px 16px;
     border-radius: 8px;
     font-size: 13px;
     margin-bottom: 18px;
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
     border: 1px solid transparent;
 }
 .alert-success { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
 .alert-danger  { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
 .alert-warning { background: #fffbeb; border-color: #fde68a; color: #92400e; }
 
-/* ── 14. MODAL ── */
+/* ── 13. MODAL ── */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -549,7 +510,7 @@ tbody tr:last-child td { border-bottom: none; }
 }
 .modal-close:hover { color: var(--danger); background: #fef2f2; }
 
-/* ── 15. TRẠNG THÁI TRỐNG ── */
+/* ── 14. EMPTY STATE ── */
 .empty-state {
     text-align: center;
     padding: 60px 20px;
@@ -557,7 +518,7 @@ tbody tr:last-child td { border-bottom: none; }
 }
 .empty-state .ei { font-size: 48px; margin-bottom: 12px; display: block; }
 
-/* ── 16. PHÂN TRANG ── */
+/* ── 15. PHÂN TRANG ── */
 .pagination {
     display: flex;
     gap: 6px;
@@ -584,11 +545,36 @@ tbody tr:last-child td { border-bottom: none; }
 .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 .page-btn:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
 
+/* ── 16. SEARCH BOX ── */
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    flex: 1;
+    max-width: 320px;
+}
+.search-box input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 13px;
+    width: 100%;
+    font-family: inherit;
+}
+.search-box:focus-within {
+    border-color: var(--primary);
+    background: var(--white);
+}
+
 /* ── 17. RESPONSIVE ── */
 @media (max-width: 900px) {
     .sidebar { position: static; width: 100%; }
     .main { margin-left: 0; }
     .form-grid { grid-template-columns: 1fr; }
-    .field.span2, .field.span3 { grid-column: span 1; }
+    .field.span2 { grid-column: span 1; }
     .content { padding: 16px; }
 }

@@ -1,10 +1,12 @@
 <?php
 session_start(); require 'config.php'; require_role(['admin']);
 
+// Khoảng thời gian lọc
 $thang = (int)($_GET['thang'] ?? date('m'));
 $nam   = (int)($_GET['nam']   ?? date('Y'));
-$loai  = $_GET['loai'] ?? 'thang'; 
+$loai  = $_GET['loai'] ?? 'thang'; // thang | quy | nam
 
+// Xác định khoảng lọc
 if ($loai === 'nam') {
     $where_time = "YEAR(ngay_tao)=$nam";
     $group_by   = "MONTH(ngay_tao)";
@@ -22,11 +24,12 @@ if ($loai === 'nam') {
 }
 $quy = $quy ?? ceil($thang/3);
 
-
+// Tổng quan kỳ này
 $tong = $conn->query("SELECT COUNT(*) AS so_don, COALESCE(SUM(doanh_thu),0) AS doanh_thu, COALESCE(SUM(loi_nhuan),0) AS loi_nhuan, COALESCE(SUM(tong_chi_phi),0) AS chi_phi FROM don_hang WHERE $where_time AND trang_thai!='huy'")->fetch_assoc();
 $don_huy = $conn->query("SELECT COUNT(*) AS c FROM don_hang WHERE $where_time AND trang_thai='huy'")->fetch_assoc()['c']??0;
 $don_hoan= $conn->query("SELECT COUNT(*) AS c FROM don_hang WHERE $where_time AND trang_thai IN ('hoan_thanh','da_thanh_toan')")->fetch_assoc()['c']??0;
 
+// Dữ liệu theo thời gian (biểu đồ)
 $chart_rows = $conn->query("SELECT $group_by AS ky, COALESCE(SUM(doanh_thu),0) AS dt, COALESCE(SUM(loi_nhuan),0) AS ln, COUNT(*) AS so_don FROM don_hang WHERE $where_time AND trang_thai!='huy' GROUP BY $group_by ORDER BY $group_by ASC");
 $chart_data = ['labels'=>[],'dt'=>[],'ln'=>[],'don'=>[]];
 while ($r = $chart_rows->fetch_assoc()) {
@@ -36,12 +39,16 @@ while ($r = $chart_rows->fetch_assoc()) {
     $chart_data['don'][]    = (int)$r['so_don'];
 }
 
+// Top 5 tuyến đường nhiều đơn nhất
 $top_tuyen = $conn->query("SELECT td.ten_tuyen, COUNT(*) AS so_don, COALESCE(SUM(dh.doanh_thu),0) AS doanh_thu FROM don_hang dh JOIN tuyen_duong td ON dh.tuyen_duong_id=td.id WHERE $where_time AND dh.trang_thai!='huy' GROUP BY td.id ORDER BY so_don DESC LIMIT 5")->fetch_all(MYSQLI_ASSOC);
 
+// Top 5 tài xế
 $top_taixe = $conn->query("SELECT tx.ho_ten, COUNT(*) AS so_chuyen, COALESCE(SUM(dh.doanh_thu),0) AS doanh_thu FROM don_hang dh JOIN tai_xe tx ON dh.tai_xe_id=tx.id WHERE $where_time AND dh.trang_thai!='huy' GROUP BY tx.id ORDER BY so_chuyen DESC LIMIT 5")->fetch_all(MYSQLI_ASSOC);
 
+// Xe hiệu suất cao
 $top_xe = $conn->query("SELECT x.bien_so, COUNT(*) AS so_chuyen, COALESCE(SUM(cx.km_thuc_te),0) AS tong_km, COALESCE(SUM(cx.nhien_lieu),0) AS tong_nl FROM chuyen_xe cx JOIN xe x ON cx.xe_id=x.id WHERE MONTH(cx.created_at)=$thang AND YEAR(cx.created_at)=$nam AND cx.trang_thai='hoan_thanh' GROUP BY x.id ORDER BY so_chuyen DESC LIMIT 5")->fetch_all(MYSQLI_ASSOC);
 
+// Phân tích theo loại vận chuyển
 $loai_vc = $conn->query("SELECT loai_van_chuyen, COUNT(*) AS c, COALESCE(SUM(doanh_thu),0) AS dt FROM don_hang WHERE $where_time AND trang_thai!='huy' GROUP BY loai_van_chuyen ORDER BY dt DESC")->fetch_all(MYSQLI_ASSOC);
 
 $loai_vc_labels = ['hang_le'=>'Hàng lẻ','hang_nguyen_xe'=>'Nguyên xe','hang_dong_lanh'=>'Đông lạnh','hang_qua_kho'=>'Qua kho','hang_sieu_truong'=>'Siêu trường'];
@@ -85,6 +92,7 @@ $active = 'bao_cao'; require 'sidebar_admin.php';
 
 <div class="content">
 
+    <!-- Bộ lọc -->
     <form method="GET" class="filter-form">
         <label>Loại báo cáo:</label>
         <select name="loai" onchange="this.form.submit()">
@@ -114,6 +122,7 @@ $active = 'bao_cao'; require 'sidebar_admin.php';
         </select>
     </form>
 
+    <!-- Tổng quan KPI -->
     <div class="stat-cards" style="margin-bottom:24px">
         <div class="stat-card">
             <div class="sc-icon">📦</div><div class="sc-label">Tổng đơn hàng</div>
@@ -137,7 +146,9 @@ $active = 'bao_cao'; require 'sidebar_admin.php';
         </div>
     </div>
 
+    <!-- Biểu đồ + Top tuyến -->
     <div class="chart-grid">
+        <!-- Biểu đồ doanh thu -->
         <div class="chart-card">
             <h3>📈 Doanh Thu & Lợi Nhuận</h3>
             <?php if (!empty($chart_data['labels'])): ?>
@@ -147,6 +158,7 @@ $active = 'bao_cao'; require 'sidebar_admin.php';
             <?php endif; ?>
         </div>
 
+        <!-- Biểu đồ tròn loại vận chuyển -->
         <div class="chart-card">
             <h3>🍩 Phân Loại Vận Chuyển</h3>
             <?php if (!empty($loai_vc)): ?>
@@ -165,6 +177,7 @@ $active = 'bao_cao'; require 'sidebar_admin.php';
         </div>
     </div>
 
+    <!-- Số đơn theo thời gian -->
     <?php if (!empty($chart_data['labels'])): ?>
     <div class="chart-card" style="margin-bottom:24px">
         <h3>📦 Số Đơn Hàng Theo Thời Gian</h3>
@@ -172,8 +185,10 @@ $active = 'bao_cao'; require 'sidebar_admin.php';
     </div>
     <?php endif; ?>
 
+    <!-- 3 bảng ranking -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
 
+        <!-- Top tuyến -->
         <div class="chart-card">
             <h3>🗺️ Top Tuyến Đường</h3>
             <?php if (!empty($top_tuyen)):
@@ -194,6 +209,7 @@ $active = 'bao_cao'; require 'sidebar_admin.php';
             <?php endif; ?>
         </div>
 
+        <!-- Top tài xế -->
         <div class="chart-card">
             <h3>👤 Top Tài Xế</h3>
             <?php if (!empty($top_taixe)):
@@ -214,6 +230,7 @@ $active = 'bao_cao'; require 'sidebar_admin.php';
             <?php endif; ?>
         </div>
 
+        <!-- Top xe -->
         <div class="chart-card">
             <h3>🚛 Hiệu Suất Xe</h3>
             <?php if (!empty($top_xe)):
@@ -244,6 +261,7 @@ $active = 'bao_cao'; require 'sidebar_admin.php';
 <script>
 const chartData = <?= json_encode($chart_data) ?>;
 
+// Biểu đồ doanh thu & lợi nhuận
 <?php if (!empty($chart_data['labels'])): ?>
 new Chart(document.getElementById('chartDT'), {
     type: 'bar',
@@ -263,6 +281,7 @@ new Chart(document.getElementById('chartDT'), {
     }
 });
 
+// Biểu đồ số đơn
 new Chart(document.getElementById('chartDon'), {
     type: 'line',
     data: {
@@ -273,6 +292,7 @@ new Chart(document.getElementById('chartDon'), {
 });
 <?php endif; ?>
 
+// Biểu đồ tròn
 <?php if (!empty($loai_vc)): ?>
 new Chart(document.getElementById('chartLoai'), {
     type: 'doughnut',

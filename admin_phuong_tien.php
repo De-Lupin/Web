@@ -2,6 +2,7 @@
 session_start(); require 'config.php'; require_role(['admin']);
 $msg=''; $tab=$_GET['tab']??'xe';
 
+// CRUD Xe
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['them_xe'])) {
     $bs=$_POST['bien_so']??''; $loai=$_POST['loai_xe']??'xe_tai_trung';
     $nh=$_POST['nhan_hieu']??''; $ns=(int)($_POST['nam_sx']??0)?:null;
@@ -27,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['xoa_xe'])) {
     $msg=['type'=>'success','text'=>'Đã đưa xe vào trạng thái nghỉ!'];
 }
 
+// CRUD Tài xế
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['them_taixe'])) {
     $ht=trim($_POST['ho_ten']??''); $sdt=trim($_POST['so_dien_thoai']??'');
     $gplx=trim($_POST['so_gplx']??''); $hang=$_POST['hang_gplx']??'C';
@@ -51,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['sua_taixe'])) {
 $ds_xe    = $conn->query("SELECT * FROM xe ORDER BY tinh_trang,bien_so");
 $ds_taixe = $conn->query("SELECT * FROM tai_xe ORDER BY tinh_trang,ho_ten");
 
+// Cảnh báo hết hạn
 $warn_xe  = $conn->query("SELECT bien_so,han_dang_kiem,han_bao_hiem FROM xe WHERE (han_dang_kiem<=DATE_ADD(CURDATE(),INTERVAL 30 DAY) OR han_bao_hiem<=DATE_ADD(CURDATE(),INTERVAL 30 DAY)) AND tinh_trang!='nghi'")->fetch_all(MYSQLI_ASSOC);
 $warn_tx  = $conn->query("SELECT ho_ten,han_gplx FROM tai_xe WHERE han_gplx<=DATE_ADD(CURDATE(),INTERVAL 60 DAY) AND tinh_trang!='nghi_viec'")->fetch_all(MYSQLI_ASSOC);
 
@@ -84,6 +87,7 @@ $active='phuong_tien'; require 'sidebar_admin.php';
 <div class="content">
     <?php if(!empty($msg))echo"<div class='alert alert-{$msg['type']}'>{$msg['text']}</div>"; ?>
 
+    <!-- Cảnh báo -->
     <?php if(!empty($warn_xe)||!empty($warn_tx)): ?>
     <div class="warn-box">
         <h4>⚠️ Cảnh báo hết hạn</h4>
@@ -96,12 +100,14 @@ $active='phuong_tien'; require 'sidebar_admin.php';
     </div>
     <?php endif; ?>
 
+    <!-- Tabs -->
     <div class="tab-bar">
         <a href="?tab=xe"     class="tab-btn <?=$tab==='xe'?'active':''?>">🚛 Xe (<?=$ds_xe->num_rows?>)</a>
         <a href="?tab=taixe"  class="tab-btn <?=$tab==='taixe'?'active':''?>">👤 Tài Xế (<?=$ds_taixe->num_rows?>)</a>
     </div>
 
     <?php if($tab==='xe'): ?>
+    <!-- TAB XE -->
     <div class="page-header">
         <h1>Danh Sách Xe</h1>
         <button class="btn btn-primary" onclick="document.getElementById('modal_them_xe').classList.add('open')">➕ Thêm Xe</button>
@@ -141,6 +147,7 @@ $active='phuong_tien'; require 'sidebar_admin.php';
     </div>
 
     <?php else: ?>
+    <!-- TAB TÀI XẾ -->
     <div class="page-header">
         <h1>Danh Sách Tài Xế</h1>
         <button class="btn btn-primary" onclick="document.getElementById('modal_them_tx').classList.add('open')">➕ Thêm Tài Xế</button>
@@ -174,6 +181,7 @@ $active='phuong_tien'; require 'sidebar_admin.php';
 </main>
 </div>
 
+<!-- Modal thêm xe -->
 <div class="modal-overlay" id="modal_them_xe">
 <div class="modal-box"><div class="modal-header"><h3>➕ Thêm Xe Mới</h3><button class="modal-close" onclick="this.closest('.modal-overlay').classList.remove('open')">✕</button></div>
 <form method="POST"><div class="form-grid">
@@ -189,6 +197,7 @@ $active='phuong_tien'; require 'sidebar_admin.php';
 <div class="form-actions"><button type="button" class="btn btn-ghost" onclick="this.closest('.modal-overlay').classList.remove('open')">Hủy</button><button type="submit" name="them_xe" class="btn btn-primary">💾 Thêm Xe</button></div>
 </form></div></div>
 
+<!-- Modal sửa xe -->
 <div class="modal-overlay" id="modal_sua_xe">
 <div class="modal-box"><div class="modal-header"><h3>✏️ Sửa Xe — <span id="sua_xe_bs"></span></h3><button class="modal-close" onclick="this.closest('.modal-overlay').classList.remove('open')">✕</button></div>
 <form method="POST"><input type="hidden" name="xe_id" id="sxa_id">
@@ -205,6 +214,7 @@ $active='phuong_tien'; require 'sidebar_admin.php';
 <div class="form-actions"><button type="button" class="btn btn-ghost" onclick="this.closest('.modal-overlay').classList.remove('open')">Hủy</button><button type="submit" name="sua_xe" class="btn btn-primary">💾 Lưu</button></div>
 </form></div></div>
 
+<!-- Modal thêm tài xế -->
 <div class="modal-overlay" id="modal_them_tx">
 <div class="modal-box"><div class="modal-header"><h3>➕ Thêm Tài Xế</h3><button class="modal-close" onclick="this.closest('.modal-overlay').classList.remove('open')">✕</button></div>
 <form method="POST"><div class="form-grid">
@@ -219,6 +229,7 @@ $active='phuong_tien'; require 'sidebar_admin.php';
 <div class="form-actions"><button type="button" class="btn btn-ghost" onclick="this.closest('.modal-overlay').classList.remove('open')">Hủy</button><button type="submit" name="them_taixe" class="btn btn-primary">💾 Thêm Tài Xế</button></div>
 </form></div></div>
 
+<!-- Modal sửa tài xế -->
 <div class="modal-overlay" id="modal_sua_tx">
 <div class="modal-box"><div class="modal-header"><h3>✏️ Sửa Tài Xế — <span id="sua_tx_ten"></span></h3><button class="modal-close" onclick="this.closest('.modal-overlay').classList.remove('open')">✕</button></div>
 <form method="POST"><input type="hidden" name="tx_id" id="stx_id">

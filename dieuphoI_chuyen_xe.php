@@ -1,27 +1,87 @@
 <?php
 session_start(); require 'config.php'; require_role(['dieuphoI']);
+$full_name = $_SESSION['full_name'] ?? 'Điều phối viên';
 $msg = '';
 
+// ================================================================
+// HÀM TỰ ĐỘNG TÍNH CHI PHÍ NHIÊN LIỆU
+// Công thức: km_thuc_te / muc_tieu_thu * don_gia_nhien_lieu
+// Mặc định: 10L/100km, 25.000đ/lít
+// ================================================================
+function tinh_chi_phi_nhien_lieu($conn, $xe_id, $km_thuc_te) {
+    $r = $conn->query("SELECT muc_tieu_thu FROM xe WHERE id=$xe_id LIMIT 1");
+    $xe = $r ? $r->fetch_assoc() : null;
+    $muc_tieu_thu = ($xe && $xe['muc_tieu_thu'] > 0) ? $xe['muc_tieu_thu'] : 10; // 10L/100km
+    $don_gia_nl   = 25000; // đồng/lít (có thể đưa vào system_settings)
+    $lit = ($km_thuc_te / 100) * $muc_tieu_thu;
+    return round($lit * $don_gia_nl);
+}
 
+// ================================================================
+// XỬ LÝ CẬP NHẬT CHUYẾN XE — CÓ TỰ ĐỘNG TÍNH CHI PHÍ
+// ================================================================
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['cap_nhat_chuyen'])) {
-    $id       = (int)$_POST['cx_id'];
-    $km_kt    = (int)$_POST['km_ket_thuc'];
-    $nhien_lieu=(float)$_POST['nhien_lieu'];
-    $chi_phi  = (float)$_POST['chi_phi_duong'];
-    $trang_thai=$_POST['trang_thai_cx'];
-    $ghi_chu  = trim($_POST['ghi_chu_cx'] ?? '');
-    $thoi_gian_den = $trang_thai==='hoan_thanh' ? 'NOW()' : 'NULL';
+    $id          = (int)$_POST['cx_id'];
+    $km_kt       = (int)$_POST['km_ket_thuc'];
+    $nhien_lieu  = (float)$_POST['nhien_lieu'];
+    $chi_phi     = (float)$_POST['chi_phi_duong'];
+    $trang_thai  = $_POST['trang_thai_cx'];
+    $ghi_chu     = trim($_POST['ghi_chu_cx'] ?? '');
+    $thoi_gian_den = $trang_thai === 'hoan_thanh' ? 'NOW()' : 'NULL';
 
-    $conn->query("UPDATE chuyen_xe SET km_ket_thuc=$km_kt, nhien_lieu=$nhien_lieu, chi_phi_duong=$chi_phi, trang_thai='$trang_thai', ghi_chu_cx='".mysqli_real_escape_string($conn,$ghi_chu)."', thoi_gian_den=$thoi_gian_den WHERE id=$id");
+    // Lấy thông tin chuyến (xe_id, km_bat_dau, don_hang_id)
+    $cx_info = $conn->query("SELECT xe_id, km_bat_dau, don_hang_id FROM chuyen_xe WHERE id=$id")->fetch_assoc();
+    $km_thuc_te = $cx_info ? max(0, $km_kt - $cx_info['km_bat_dau']) : 0;
 
-
-    if ($trang_thai==='hoan_thanh') {
-        $cx = $conn->query("SELECT xe_id,km_thuc_te FROM chuyen_xe WHERE id=$id")->fetch_assoc();
-        if ($cx) $conn->query("UPDATE xe SET km_hien_tai=km_hien_tai+{$cx['km_thuc_te']} WHERE id={$cx['xe_id']}");
-      
-        $conn->query("UPDATE don_hang SET trang_thai='da_giao',ngay_giao_thuc_te=NOW() WHERE id=(SELECT don_hang_id FROM chuyen_xe WHERE id=$id)");
+    // ---- AUTO TÍNH NHIÊN LIỆU nếu người dùng không nhập ----
+    if ($nhien_lieu <= 0 && $km_thuc_te > 0 && $cx_info) {
+        $r_xe = $conn->query("SELECT muc_tieu_thu FROM xe WHERE id={$cx_info['xe_id']} LIMIT 1")->fetch_assoc();
+        $muc  = ($r_xe && $r_xe['muc_tieu_thu'] > 0) ? $r_xe['muc_tieu_thu'] : 10;
+        $nhien_lieu = round(($km_thuc_te / 100) * $muc, 1);
     }
-    $msg = ['type'=>'success','text'=>'Đã cập nhật chuyến xe!'];
+
+    $conn->query("UPDATE chuyen_xe
+                  SET km_ket_thuc=$km_kt, km_thuc_te=$km_thuc_te,
+                      nhien_lieu=$nhien_lieu, chi_phi_duong=$chi_phi,
+                      trang_thai='$trang_thai',
+                      ghi_chu_cx='".mysqli_real_escape_string($conn,$ghi_chu)."',
+                      thoi_gian_den=$thoi_gian_den
+                  WHERE id=$id");
+
+    // ---- KHI HOÀN THÀNH: cập nhật xe, đơn hàng, tính lợi nhuận ----
+    if ($trang_thai === 'hoan_thanh' && $cx_info) {
+        // Cập nhật km xe
+        $conn->query("UPDATE xe SET km_hien_tai=km_hien_tai+$km_thuc_te,
+                      tinh_trang='san_sang' WHERE id={$cx_info['xe_id']}");
+
+        // Giải phóng tài xế
+        $conn->query("UPDATE tai_xe SET tinh_trang='san_sang'
+                      WHERE id=(SELECT tai_xe_id FROM chuyen_xe WHERE id=$id LIMIT 1)");
+
+        // Auto tính chi phí nhiên liệu = L * 25000
+        $chi_phi_nl = round($nhien_lieu * 25000);
+
+        // Cập nhật đơn hàng: trạng thái + chi phí thực tế + lợi nhuận
+        $don_id = $cx_info['don_hang_id'];
+        $don    = $conn->query("SELECT doanh_thu, phi_cao_toc, phi_boc_xep, phi_cho_hang, phi_phat_sinh
+                                FROM don_hang WHERE id=$don_id LIMIT 1")->fetch_assoc();
+        if ($don) {
+            $tong_cp = $chi_phi_nl + $chi_phi
+                     + ($don['phi_cao_toc'] ?? 0) + ($don['phi_boc_xep'] ?? 0)
+                     + ($don['phi_cho_hang'] ?? 0) + ($don['phi_phat_sinh'] ?? 0);
+            $loi_nhuan = $don['doanh_thu'] - $tong_cp;
+
+            $conn->query("UPDATE don_hang
+                          SET trang_thai='da_giao',
+                              ngay_giao_thuc_te=NOW(),
+                              tong_chi_phi=$tong_cp,
+                              loi_nhuan=$loi_nhuan
+                          WHERE id=$don_id");
+        }
+        $msg = ['type'=>'success','text'=>"✅ Hoàn thành chuyến! Km thực tế: <b>{$km_thuc_te} km</b> · Nhiên liệu: <b>{$nhien_lieu} L</b> · Chi phí NL tự tính: <b>₫".number_format($chi_phi_nl)."</b>"];
+    } else {
+        $msg = ['type'=>'success','text'=>'Đã cập nhật chuyến xe!'];
+    }
 }
 
 
@@ -81,7 +141,7 @@ $hom_nay   = $conn->query("SELECT COUNT(*) AS c FROM chuyen_xe WHERE DATE(create
 $km_thang  = $conn->query("SELECT COALESCE(SUM(km_thuc_te),0) AS t FROM chuyen_xe WHERE MONTH(created_at)=MONTH(CURDATE()) AND trang_thai='hoan_thanh'")->fetch_assoc()['t']??0;
 $nl_thang  = $conn->query("SELECT COALESCE(SUM(nhien_lieu),0) AS t FROM chuyen_xe WHERE MONTH(created_at)=MONTH(CURDATE()) AND trang_thai='hoan_thanh'")->fetch_assoc()['t']??0;
 
-$active = 'chuyen_xe'; require 'sidebar_dieuphoI.php';
+$active = 'chuyen_xe'
 ?>
 <!DOCTYPE html><html lang="vi"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -89,6 +149,7 @@ $active = 'chuyen_xe'; require 'sidebar_dieuphoI.php';
 <link rel="stylesheet" href="dieuphoI_layout.css">
 </head><body>
 <div class="wrapper">
+<?php require 'sidebar_dieuphoI.php'; ?>
 
 <main class="main">
 <div class="topbar">

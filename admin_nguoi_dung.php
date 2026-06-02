@@ -2,6 +2,7 @@
 session_start(); require 'config.php'; require_role(['admin']);
 $msg = '';
 
+// Thêm user
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['them_user'])) {
     $un   = trim($_POST['username']  ?? '');
     $pw   = trim($_POST['password']  ?? '');
@@ -10,15 +11,15 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['them_user'])) {
     $phone= trim($_POST['phone']     ?? '');
     $role = $_POST['role']           ?? 'khachhang';
     if ($un && $pw && $email && $fn) {
-        $hash = password_hash($pw, PASSWORD_DEFAULT);
         $stmt = $conn->prepare("INSERT INTO users (username,password,email,full_name,phone,role) VALUES(?,?,?,?,?,?)");
-        $stmt->bind_param("ssssss",$un,$hash,$email,$fn,$phone,$role);
+        $stmt->bind_param("ssssss",$un,$pw,$email,$fn,$phone,$role);
         if ($stmt->execute()) $msg=['type'=>'success','text'=>"Đã tạo tài khoản <strong>$un</strong> thành công!"];
         else $msg=['type'=>'danger','text'=>'Lỗi: '.($stmt->error=='Duplicate entry'?'Username hoặc email đã tồn tại!':$stmt->error)];
         $stmt->close();
     } else $msg=['type'=>'danger','text'=>'Vui lòng nhập đầy đủ thông tin!'];
 }
 
+// Sửa user
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['sua_user'])) {
     $id   = (int)$_POST['user_id'];
     $fn   = trim($_POST['full_name'] ?? '');
@@ -28,14 +29,14 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['sua_user'])) {
     $act  = (int)($_POST['is_active']??1);
     $pw   = trim($_POST['new_password']??'');
     if ($pw) {
-        $hash = password_hash($pw, PASSWORD_DEFAULT);
-        $conn->query("UPDATE users SET full_name='".mysqli_real_escape_string($conn,$fn)."',email='".mysqli_real_escape_string($conn,$email)."',phone='".mysqli_real_escape_string($conn,$phone)."',role='$role',is_active=$act,password='$hash' WHERE id=$id");
+        $conn->query("UPDATE users SET full_name='".mysqli_real_escape_string($conn,$fn)."',email='".mysqli_real_escape_string($conn,$email)."',phone='".mysqli_real_escape_string($conn,$phone)."',role='$role',is_active=$act,password='" . mysqli_real_escape_string($conn,$pw) . "' WHERE id=$id");
     } else {
         $conn->query("UPDATE users SET full_name='".mysqli_real_escape_string($conn,$fn)."',email='".mysqli_real_escape_string($conn,$email)."',phone='".mysqli_real_escape_string($conn,$phone)."',role='$role',is_active=$act WHERE id=$id");
     }
     $msg=['type'=>'success','text'=>'Đã cập nhật tài khoản thành công!'];
 }
 
+// Khoá/Mở khoá
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['toggle_active'])) {
     $id  = (int)$_POST['user_id'];
     $act = (int)$_POST['current_active'];
@@ -44,12 +45,14 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['toggle_active'])) {
     $msg=['type'=>'success','text'=>$new?'Đã mở khóa tài khoản!':'Đã khóa tài khoản!'];
 }
 
+// Xóa user
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['xoa_user'])) {
     $id = (int)$_POST['user_id'];
     $conn->query("DELETE FROM users WHERE id=$id AND role!='admin'");
     $msg=['type'=>'success','text'=>'Đã xóa tài khoản!'];
 }
 
+// Lọc & tìm kiếm
 $search = trim($_GET['search'] ?? '');
 $role_f = $_GET['role']        ?? '';
 $status = $_GET['status']      ?? '';
@@ -97,6 +100,7 @@ $active = 'nguoi_dung'; require 'sidebar_admin.php';
 <div class="content">
     <?php if(!empty($msg)): ?><div class="alert alert-<?=$msg['type']?>"><?=$msg['text']?></div><?php endif; ?>
 
+    <!-- Stat -->
     <div class="stat-cards" style="margin-bottom:20px">
         <div class="stat-card"><div class="sc-icon">👥</div><div class="sc-label">Tổng</div>
             <div class="sc-value"><?=$conn->query("SELECT COUNT(*) AS c FROM users WHERE role!='admin'")->fetch_assoc()['c']?></div><div class="sc-sub">Tài khoản</div></div>
@@ -188,6 +192,7 @@ $active = 'nguoi_dung'; require 'sidebar_admin.php';
 </main>
 </div>
 
+<!-- Modal thêm user -->
 <div class="modal-overlay" id="modal_them">
 <div class="modal-box">
     <div class="modal-header"><h3>➕ Thêm Tài Khoản Mới</h3>
@@ -213,6 +218,7 @@ $active = 'nguoi_dung'; require 'sidebar_admin.php';
 </div>
 </div>
 
+<!-- Modal sửa user -->
 <div class="modal-overlay" id="modal_sua">
 <div class="modal-box">
     <div class="modal-header"><h3>✏️ Chỉnh Sửa Tài Khoản</h3>

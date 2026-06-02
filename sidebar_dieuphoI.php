@@ -7,13 +7,15 @@ $nb = $conn->query("SELECT COUNT(*) AS c FROM thong_bao WHERE nguoi_nhan_id=$uid
 $notif_count = $nb ? ($nb->fetch_assoc()['c'] ?? 0) : 0;
 
 $menus = [
-    'dashboard'   => ['icon'=>'📊','label'=>'Dashboard',           'href'=>'dieuphoI_dashboard.php'],
-    'don_hang'    => ['icon'=>'📋','label'=>'Danh sách đơn hàng',  'href'=>'dieuphoI_don_hang.php'],
-    'tao_don'     => ['icon'=>'➕','label'=>'Tạo đơn hàng mới',    'href'=>'dieuphoI_tao_don.php'],
-    'phan_xe'     => ['icon'=>'🚛','label'=>'Phân xe / Phân ca',    'href'=>'dieuphoI_phan_xe.php'],
-    'chuyen_xe'   => ['icon'=>'🛣️','label'=>'Quản lý chuyến xe',    'href'=>'dieuphoI_chuyen_xe.php'],
-    'tuyen_duong' => ['icon'=>'🗺️','label'=>'Tuyến đường',          'href'=>'dieuphoI_tuyen_duong.php'],
+    'dashboard'   => ['icon'=>'📊','label'=>'Dashboard',            'href'=>'dieuphoI_dashboard.php'],
+    'don_hang'    => ['icon'=>'📋','label'=>'Danh sách đơn hàng',   'href'=>'dieuphoI_don_hang.php'],
+    'tao_don'     => ['icon'=>'➕','label'=>'Tạo đơn hàng mới',     'href'=>'dieuphoI_tao_don.php'],
+    'phan_xe'     => ['icon'=>'🚛','label'=>'Phân xe / Phân ca',     'href'=>'dieuphoI_phan_xe.php'],
+    'chuyen_xe'   => ['icon'=>'🛣️','label'=>'Quản lý chuyến xe',     'href'=>'dieuphoI_chuyen_xe.php'],
+    'lo_trinh'    => ['icon'=>'📍','label'=>'Cập nhật lộ trình',    'href'=>'dieuphoI_lo_trinh.php'],
+    'tuyen_duong' => ['icon'=>'🗺️','label'=>'Tuyến đường',           'href'=>'dieuphoI_tuyen_duong.php'],
     'gps'         => ['icon'=>'📡','label'=>'Theo dõi GPS',          'href'=>'dieuphoI_gps.php'],
+    'ho_tro'      => ['icon'=>'🎧','label'=>'Hỗ trợ khách hàng',    'href'=>'dieuphoI_ho_tro.php'],
     'thong_bao'   => ['icon'=>'🔔','label'=>'Thông báo',             'href'=>'dieuphoI_thong_bao.php','badge'=>$notif_count],
 ];
 ?>

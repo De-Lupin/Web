@@ -57,20 +57,23 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
     }
 }
 
+// Danh sách tuyến, xe, tài xế
 $ds_tuyen  = $conn->query("SELECT id,ma_tuyen,ten_tuyen,khoang_cach,thoi_gian,gia_co_ban FROM tuyen_duong WHERE is_active=1 ORDER BY loai_tuyen,ten_tuyen");
 $ds_xe     = $conn->query("SELECT id,bien_so,loai_xe,tai_trong,tinh_trang FROM xe WHERE tinh_trang='san_sang' ORDER BY bien_so");
 $ds_taixe  = $conn->query("SELECT id,ho_ten,so_dien_thoai,hang_gplx,tinh_trang FROM tai_xe WHERE tinh_trang='san_sang' ORDER BY ho_ten");
 
+// Tuyến dạng JSON để tự điền giá
 $tuyen_json = [];
 $ds_tuyen->data_seek(0);
 while($t=$ds_tuyen->fetch_assoc()) $tuyen_json[$t['id']] = $t;
 $ds_tuyen->data_seek(0);
 
-
+// Mã đơn tự sinh
 $last    = $conn->query("SELECT ma_don FROM don_hang ORDER BY id DESC LIMIT 1")->fetch_assoc();
 $next_n  = $last ? ((int)substr($last['ma_don'],-3)+1) : 1;
 $auto_ma = 'VT-'.date('Y').'-'.str_pad($next_n,3,'0',STR_PAD_LEFT);
 
+// Danh sách tỉnh thường dùng
 $tinh_list = ['TP.HCM','Hà Nội','Đà Nẵng','Bình Dương','Đồng Nai','Cần Thơ','Vũng Tàu','Long An','Tây Ninh','Bình Phước','Hải Phòng','Nha Trang','Huế','Đà Lạt','Cà Mau'];
 
 $active = 'tao_don'; require 'sidebar_dieuphoI.php';
@@ -109,9 +112,10 @@ $active = 'tao_don'; require 'sidebar_dieuphoI.php';
     <form method="POST">
     <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
 
+        <!-- Cột trái -->
         <div style="display:flex;flex-direction:column;gap:20px">
 
-       
+            <!-- Thông tin khách hàng & hàng hóa -->
             <div class="form-card">
                 <h3 style="font-size:15px;font-weight:700;color:var(--green);margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--green-light)">
                     📋 Thông Tin Đơn Hàng
@@ -138,7 +142,7 @@ $active = 'tao_don'; require 'sidebar_dieuphoI.php';
                         <input type="text" name="dien_thoai_kh" placeholder="09xxxxxxxx" value="<?= htmlspecialchars($_POST['dien_thoai_kh']??'') ?>">
                     </div>
 
-               
+                    <!-- Điểm lấy hàng -->
                     <div class="field">
                         <label>Tỉnh/TP lấy hàng *</label>
                         <input list="tinh_list" name="tinh_lay" placeholder="VD: TP.HCM" required value="<?= htmlspecialchars($_POST['tinh_lay']??'') ?>">
@@ -176,7 +180,7 @@ $active = 'tao_don'; require 'sidebar_dieuphoI.php';
                 </div>
             </div>
 
-     
+            <!-- Tuyến đường & Lịch trình -->
             <div class="form-card">
                 <h3 style="font-size:15px;font-weight:700;color:var(--green);margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--green-light)">
                     🗺️ Tuyến Đường & Lịch Trình
@@ -206,6 +210,7 @@ $active = 'tao_don'; require 'sidebar_dieuphoI.php';
                 </div>
             </div>
 
+            <!-- Phân xe & tài xế -->
             <div class="form-card">
                 <h3 style="font-size:15px;font-weight:700;color:var(--green);margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--green-light)">
                     🚛 Phân Công Xe & Tài Xế
@@ -239,6 +244,7 @@ $active = 'tao_don'; require 'sidebar_dieuphoI.php';
             </div>
         </div>
 
+        <!-- Cột phải: Tài chính -->
         <div class="form-card" style="position:sticky;top:74px">
             <h3 style="font-size:15px;font-weight:700;color:var(--green);margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--green-light)">
                 💰 Tài Chính
@@ -292,7 +298,7 @@ $active = 'tao_don'; require 'sidebar_dieuphoI.php';
 </div>
 
 <script>
-
+// Dữ liệu tuyến để tự điền
 const tuyenData = <?= json_encode($tuyen_json) ?>;
 
 function chonTuyen(sel){

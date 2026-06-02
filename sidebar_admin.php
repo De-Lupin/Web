@@ -1,5 +1,6 @@
 <?php
-
+// sidebar_admin.php — include vào tất cả trang admin
+// Dùng: $active = 'dashboard'; require 'sidebar_admin.php';
 $admin_fullname = $_SESSION['full_name'] ?? 'Admin';
 
 $menus = [
