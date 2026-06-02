@@ -127,10 +127,10 @@ $kh_list = $conn->query(
 )->fetch_all(MYSQLI_ASSOC);
 
 // Thống kê nhanh
-$st_tong   = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khachhang'")->fetch_assoc()['c'] ?? 0;
-$st_active = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khachhang' AND is_active=1")->fetch_assoc()['c'] ?? 0;
-$st_google = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khachhang' AND login_method='google'")->fetch_assoc()['c'] ?? 0;
-$st_phone  = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khachhang' AND login_method='phone'")->fetch_assoc()['c'] ?? 0;
+$st_tong   = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khách hàng'")->fetch_assoc()['c'] ?? 0;
+$st_active = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khách hàng' AND is_active=1")->fetch_assoc()['c'] ?? 0;
+$st_google = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khách hàng' AND login_method='google'")->fetch_assoc()['c'] ?? 0;
+$st_phone  = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khách hàng' AND login_method='phone'")->fetch_assoc()['c'] ?? 0;
 
 $tt_map = [
     'cho_duyet'       => ['l' => 'Chờ duyệt',     'c' => '#f59e0b'],

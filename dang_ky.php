@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Tên đăng nhập hoặc email đã được sử dụng!';
         } else {
             $hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("INSERT INTO users (username,password,email,full_name,phone,role,is_active) VALUES (?,?,?,?,?,'khachhang',1)");
+            $stmt = $conn->prepare("INSERT INTO users (username,password,email,full_name,phone,role,is_active) VALUES (?,?,?,?,?,'khách hàng',1)");
             $stmt->bind_param("sssss", $username, $hash, $email, $ho_ten, $sdt);
             $stmt->execute();
             $stmt->close();

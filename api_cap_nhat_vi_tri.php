@@ -159,12 +159,12 @@ $sdt_kh = mysqli_real_escape_string($conn, $don['dien_thoai_kh'] ?? '');
 $kh_user = null;
 if ($sdt_kh) {
     $kh_user = $conn->query(
-        "SELECT id FROM users WHERE phone='$sdt_kh' AND role='khachhang' LIMIT 1"
+        "SELECT id FROM users WHERE phone='$sdt_kh' AND role='khách hàng' LIMIT 1"
     )->fetch_assoc();
 }
 if (!$kh_user && $ten_kh) {
     $kh_user = $conn->query(
-        "SELECT id FROM users WHERE full_name='$ten_kh' AND role='khachhang' LIMIT 1"
+        "SELECT id FROM users WHERE full_name='$ten_kh' AND role='khách hàng' LIMIT 1"
     )->fetch_assoc();
 }
 

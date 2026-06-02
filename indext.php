@@ -11,7 +11,7 @@ if (isset($_SESSION['user_id'])) {
     $r = $_SESSION['role'] ?? '';
     if ($r === 'admin')    { header("Location: admin_dashboard.php");    exit(); }
     if ($r === 'dieuphoI') { header("Location: dieuphoI_dashboard.php"); exit(); }
-    header("Location: customer_dashboard.php"); exit();
+    header("Location: main_khach_hang.php"); exit();
 }
 
 $error   = '';
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_login'])) {
 
             $dest = $role_code === 'dieuphoI'
                   ? 'dieuphoI_dashboard.php'
-                  : 'customer_dashboard.php';
+                  : 'main_khach_hang.php';
             header("Location: $dest"); exit();
         }
     }

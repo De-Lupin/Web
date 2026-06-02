@@ -6,8 +6,8 @@ $login_time     = isset($_SESSION['login_time']) ? date('d/m/Y H:i:s',$_SESSION[
 
 // Thống kê người dùng
 $total_users   = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role!='admin' AND is_active=1")->fetch_assoc()['c']??0;
-$total_dp      = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='dieuphoI' AND is_active=1")->fetch_assoc()['c']??0;
-$total_kh      = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khachhang' AND is_active=1")->fetch_assoc()['c']??0;
+$total_dp      = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='điều phối' AND is_active=1")->fetch_assoc()['c']??0;
+$total_kh      = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khách hàng' AND is_active=1")->fetch_assoc()['c']??0;
 $logins_today  = $conn->query("SELECT COUNT(*) AS c FROM audit_log WHERE action='LOGIN' AND DATE(created_at)=CURDATE()")->fetch_assoc()['c']??0;
 
 // Thống kê vận hành (nếu bảng tồn tại)
