@@ -59,8 +59,8 @@ if ($kh_id > 0) {
     $stmt = $conn->prepare(
         "SELECT id, username, full_name, email, phone,
                 is_active, created_at, last_login,
-                google_id, avatar_url, login_method, phone_verified
-         FROM users WHERE id = ? AND role = 'khachhang' LIMIT 1"
+                login_method, phone_verified
+         FROM users WHERE id = ? AND role = 'khách hàng' LIMIT 1"
     );
     $stmt->bind_param("i", $kh_id);
     $stmt->execute();
@@ -100,7 +100,7 @@ if ($kh_id > 0) {
 }
 
 // ── Danh sách khách hàng (có tìm kiếm) ────────────────────
-$where = "WHERE role = 'khachhang'";
+$where = "WHERE role = 'khách hàng'";
 if ($search) {
     $s      = mysqli_real_escape_string($conn, $search);
     $where .= " AND (full_name LIKE '%$s%'
@@ -114,11 +114,9 @@ $pages = max(1, ceil($total / $per));
 
 $kh_list = $conn->query(
     "SELECT u.id, u.full_name, u.email, u.phone, u.is_active,
-            u.last_login, u.created_at, u.google_id, u.login_method,
-            u.avatar_url, u.phone_verified,
+            u.last_login, u.created_at, u.login_method, u.phone_verified,
             (SELECT COUNT(*) FROM don_hang dh
-             WHERE dh.ten_khach = u.full_name
-               AND is_deleted = 0) AS so_don,
+             WHERE dh.ten_khach = u.full_name) AS so_don,
             (SELECT COUNT(*) FROM thong_bao tb
              WHERE tb.nguoi_nhan_id = u.id AND tb.da_doc = 0) AS tb_chua_doc
      FROM users u $where
@@ -129,8 +127,8 @@ $kh_list = $conn->query(
 // Thống kê nhanh
 $st_tong   = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khách hàng'")->fetch_assoc()['c'] ?? 0;
 $st_active = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khách hàng' AND is_active=1")->fetch_assoc()['c'] ?? 0;
-$st_google = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khách hàng' AND login_method='google'")->fetch_assoc()['c'] ?? 0;
-$st_phone  = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khách hàng' AND login_method='phone'")->fetch_assoc()['c'] ?? 0;
+$st_google = 0; // DB không dùng google login
+$st_phone  = $conn->query("SELECT COUNT(*) AS c FROM users WHERE role='khách hàng' AND login_method='số điện thoại'")->fetch_assoc()['c'] ?? 0;
 
 $tt_map = [
     'cho_duyet'       => ['l' => 'Chờ duyệt',     'c' => '#f59e0b'],
@@ -464,16 +462,7 @@ require 'sidebar_dieuphoI.php';
 
                     <!-- Avatar -->
                     <div class="kh-avatar">
-                        <?php if (!empty($kh['avatar_url'])): ?>
-                            <img src="<?= htmlspecialchars($kh['avatar_url']) ?>"
-                                 alt="avatar"
-                                 onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-                            <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center">
-                                <?= mb_strtoupper(mb_substr($kh['full_name'], 0, 1)) ?>
-                            </span>
-                        <?php else: ?>
-                            <?= mb_strtoupper(mb_substr($kh['full_name'], 0, 1)) ?>
-                        <?php endif; ?>
+                        <?= mb_strtoupper(mb_substr($kh['full_name'], 0, 1)) ?>
                     </div>
 
                     <!-- Tên và thông tin -->
@@ -504,13 +493,15 @@ require 'sidebar_dieuphoI.php';
                     <!-- Badge phương thức & thông báo chưa đọc -->
                     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
                         <?php
-                        $method = $kh['login_method'] ?? 'password';
-                        $method_lbl  = ['google'=>'Google','phone'=>'SĐT','password'=>'Pass'][$method] ?? $method;
-                        $method_cls  = 'method-' . $method;
+                        $method = $kh['login_method'] ?? 'mật khẩu';
+                        if ($method === 'số điện thoại') {
+                            $method_lbl = 'SĐT'; $method_cls = 'method-phone'; $method_icon = '📱';
+                        } else {
+                            $method_lbl = 'Pass'; $method_cls = 'method-password'; $method_icon = '🔑';
+                        }
                         ?>
                         <span class="method-badge <?= $method_cls ?>">
-                            <?= $method === 'google' ? '📧' : ($method === 'phone' ? '📱' : '🔑') ?>
-                            <?= $method_lbl ?>
+                            <?= $method_icon ?> <?= $method_lbl ?>
                         </span>
                         <?php if ($kh['tb_chua_doc'] > 0): ?>
                             <span style="background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px">
@@ -562,23 +553,16 @@ require 'sidebar_dieuphoI.php';
                 <!-- Header avatar + tên -->
                 <div class="ic-head">
                     <div class="ic-avatar">
-                        <?php if (!empty($kh_detail['avatar_url'])): ?>
-                            <img src="<?= htmlspecialchars($kh_detail['avatar_url']) ?>"
-                                 alt="avatar"
-                                 onerror="this.outerHTML='<?= mb_strtoupper(mb_substr($kh_detail['full_name'],0,1)) ?>'">
-                        <?php else: ?>
-                            <?= mb_strtoupper(mb_substr($kh_detail['full_name'], 0, 1)) ?>
-                        <?php endif; ?>
+                        <?= mb_strtoupper(mb_substr($kh_detail['full_name'], 0, 1)) ?>
                     </div>
                     <div style="flex:1">
                         <div class="ic-name"><?= htmlspecialchars($kh_detail['full_name']) ?></div>
                         <div class="ic-role">
                             <?php
-                            $method = $kh_detail['login_method'] ?? 'password';
+                            $method = $kh_detail['login_method'] ?? 'mật khẩu';
                             echo match($method) {
-                                'google' => '📧 Tài khoản Google',
-                                'phone'  => '📱 Tài khoản số điện thoại',
-                                default  => '🔑 Tài khoản mật khẩu',
+                                'số điện thoại' => '📱 Tài khoản số điện thoại',
+                                default          => '🔑 Tài khoản mật khẩu',
                             };
                             ?>
                             · <?= $kh_detail['is_active'] ? '✅ Đang hoạt động' : '🔒 Đã bị khóa' ?>
@@ -606,7 +590,7 @@ require 'sidebar_dieuphoI.php';
                         <div class="ci-value">
                             <?php if ($kh_detail['phone']): ?>
                                 <strong><?= htmlspecialchars($kh_detail['phone']) ?></strong>
-                                <?php if ($kh_detail['phone_verified']): ?>
+                                <?php if (!empty($kh_detail['phone_verified'])): ?>
                                     <span style="background:#dcfce7;color:#166534;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px">✓ Đã xác minh</span>
                                 <?php endif; ?>
                             <?php else: ?>
@@ -619,14 +603,10 @@ require 'sidebar_dieuphoI.php';
                     <div class="contact-item">
                         <div class="ci-label">📧 Email / Gmail</div>
                         <div class="ci-value">
-                            <?php if ($kh_detail['email'] && !str_ends_with($kh_detail['email'], '@phone.local')): ?>
+                            <?php if (!empty($kh_detail['email'])): ?>
                                 <div>
                                     <div style="word-break:break-all"><?= htmlspecialchars($kh_detail['email']) ?></div>
-                                    <?php if ($kh_detail['google_id']): ?>
-                                        <span style="background:#fff3e0;color:#e65100;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;margin-top:3px;display:inline-block">
-                                            📧 Liên kết Google
-                                        </span>
-                                    <?php endif; ?>
+                                    <!-- Google login không được hỗ trợ trong DB hiện tại -->
                                 </div>
                             <?php else: ?>
                                 <span style="color:var(--muted)">Chưa đăng ký</span>
@@ -639,10 +619,7 @@ require 'sidebar_dieuphoI.php';
                         <div class="ci-label">🔑 Tên đăng nhập</div>
                         <div class="ci-value">
                             <?php
-                            $un = $kh_detail['username'] ?? '';
-                            // Ẩn username hệ thống tự tạo (g_xxxxx / kh_0xxx)
-                            $show = !preg_match('/^(g_|kh_)/', $un);
-                            echo $show ? htmlspecialchars($un) : '<span style="color:var(--muted)">Tự động</span>';
+                            echo htmlspecialchars($kh_detail['username'] ?? '—');
                             ?>
                         </div>
                     </div>
@@ -662,10 +639,9 @@ require 'sidebar_dieuphoI.php';
                     <div class="contact-item">
                         <div class="ci-label">🔒 Phương thức đăng nhập</div>
                         <div class="ci-value">
-                            <?php echo match($kh_detail['login_method'] ?? 'password') {
-                                'google'   => '<span style="background:#fff3e0;color:#e65100;font-size:12px;font-weight:700;padding:3px 10px;border-radius:8px">📧 Google OAuth</span>',
-                                'phone'    => '<span style="background:#e8f5e9;color:#1b5e20;font-size:12px;font-weight:700;padding:3px 10px;border-radius:8px">📱 OTP Số điện thoại</span>',
-                                default    => '<span style="background:#e3f2fd;color:#0d47a1;font-size:12px;font-weight:700;padding:3px 10px;border-radius:8px">🔑 Mật khẩu</span>',
+                            <?php echo match($kh_detail['login_method'] ?? 'mật khẩu') {
+                                'số điện thoại' => '<span style="background:#e8f5e9;color:#1b5e20;font-size:12px;font-weight:700;padding:3px 10px;border-radius:8px">📱 Số điện thoại</span>',
+                                default          => '<span style="background:#e3f2fd;color:#0d47a1;font-size:12px;font-weight:700;padding:3px 10px;border-radius:8px">🔑 Mật khẩu</span>',
                             }; ?>
                         </div>
                     </div>
@@ -689,7 +665,7 @@ require 'sidebar_dieuphoI.php';
                         📞 Gọi <?= htmlspecialchars($kh_detail['phone']) ?>
                     </a>
                     <?php endif; ?>
-                    <?php if ($kh_detail['email'] && !str_ends_with($kh_detail['email'], '@phone.local')): ?>
+                    <?php if (!empty($kh_detail['email'])): ?>
                     <a href="mailto:<?= htmlspecialchars($kh_detail['email']) ?>"
                        class="btn btn-ghost btn-sm">
                         📧 Gửi email
